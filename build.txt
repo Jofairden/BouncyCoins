@@ -1,0 +1,9 @@
+author = gorateron
+version = 0.2
+displayName = Fast Start
+homepage = http://forums.terraria.org/index.php?threads/fast-start.45055
+hideCode = false
+hideResources = false
+includeSource = true
+buildIgnore = *.csproj, *.user, obj\*, bin\*, .vs\*
+includePDB = true
