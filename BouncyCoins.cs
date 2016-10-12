@@ -24,7 +24,7 @@ namespace BouncyCoins
 
         public override void Load()
         {
-            Version reqVer = new Version(0, 8, 3, 4);
+            Version reqVer = new Version(0, 8, 3, 5);
             if (ModLoader.version < reqVer)
             {
                 string message = "\nBouncy Coins uses a functionality only present in tModLoader version " + reqVer.ToString() + " or higher. Please update tModLoader to use this mod.\n\n";
