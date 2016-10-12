@@ -1,8 +1,5 @@
 author = gorateron
 version = 0.1
 displayName = Bouncy Coins
-hideCode = false
-hideResources = false
-includeSource = true
-buildIgnore = *.csproj, *.user, obj\*, bin\*, .vs\*, *.sln, *.psd, \*.psd, *\*.psd, resources\*, modrelease\*
+buildIgnore = *.csproj, *.user, obj\*, bin\*, .vs\*, *.sln, *.psd, \*.psd, *\*.psd, resources\*, modrelease\*, *.git, *.gitignore, *.git*
 includePDB = true
