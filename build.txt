@@ -1,0 +1,8 @@
+author = gorateron
+version = 0.1
+displayName = Bouncy Coins
+hideCode = false
+hideResources = false
+includeSource = true
+buildIgnore = *.csproj, *.user, obj\*, bin\*, .vs\*, *.sln, *.psd, \*.psd, *\*.psd, resources\*
+includePDB = true
