@@ -11,6 +11,10 @@ namespace BouncyCoins
 {
 	class BouncyCoins : Mod
 	{
+
+        // (c) gorateron
+        // version 0.1.2
+
 		public BouncyCoins()
 		{
 			Properties = new ModProperties()
@@ -40,34 +44,56 @@ namespace BouncyCoins
         {
             if (item.modItem == null && item.type >= 71 && item.type <= 74)
             {
-                int index = item.type - 71;
                 Texture2D texture = Main.itemTexture[item.type];
-                Texture2D animTexture = Main.coinTexture[index];
+                Texture2D animTexture = Main.coinTexture[item.type - 71];
                 rotation = item.velocity.X * 0.2f;
-                float num5 = item.height - texture.Height;
-                float num6 = item.width * 0.5f - texture.Width * 0.5f;
-                Main.itemFrameCounter[whoAmI]++;
-                if (Main.itemFrameCounter[whoAmI] > 5)
-                {
-                    Main.itemFrameCounter[whoAmI] = 0;
-                    Main.itemFrame[whoAmI]++;
-                }
-                if (Main.itemFrame[whoAmI] > 7)
-                {
-                    Main.itemFrame[whoAmI] = 0;
-                }
-                int width = animTexture.Width;
+                float offsetY = item.height - texture.Height;
+                float offsetX = item.width * 0.5f - texture.Width * 0.5f;
+                DoCoinAnimation(whoAmI);
                 int frameHeight = animTexture.Height / 8;
-                num6 = item.width * 0.5f - animTexture.Width * 0.5f;
-                Rectangle? frameRect = new Rectangle?(new Rectangle(0, Main.itemFrame[whoAmI] * frameHeight + 1, texture.Width, frameHeight));
-                Vector2 center = new Vector2(0f, frameHeight * 0.5f);
-                Vector2 offset = new Vector2(0f, 5f * (float)Math.Cos(Main.time * 0.05f));
-                Vector2 pos = new Vector2(item.position.X - Main.screenPosition.X + width * 0.5f + num6, item.position.Y - Main.screenPosition.Y + frameHeight * 0.5f + num5) - center + offset;
-                Main.spriteBatch.Draw(animTexture, pos, frameRect, alphaColor, rotation, new Vector2(texture.Width * 0.5f, frameHeight * 0.5f), scale, SpriteEffects.None, 0f);
+                const float amplitude = 5f;
+                const float speed = 0.05f;
+                int angle = whoAmI % 60 + item.spawnTime;
+                Rectangle? frameRect = new Rectangle?(
+                                                      new Rectangle(
+                                                        0, 
+                                                        Main.itemFrame[whoAmI] * frameHeight + 1, 
+                                                        texture.Width, 
+                                                        frameHeight
+                                                      ));
+
+                Vector2 center = new Vector2(0f, 
+                                             frameHeight * 0.5f);
+
+                Vector2 offset = new Vector2(0f, 
+                                             amplitude * (float)Math.Cos(angle * speed));
+
+                Vector2 pos = new Vector2(item.position.X - Main.screenPosition.X + animTexture.Width * 0.5f + offsetX, 
+                                          item.position.Y - Main.screenPosition.Y + frameHeight * 0.5f + offsetY) 
+                                          - center + offset;
+
+                Vector2 origin = new Vector2(texture.Width * 0.5f, 
+                                             frameHeight * 0.5f);
+
+                Main.spriteBatch.Draw(animTexture, pos, frameRect, alphaColor, rotation, origin, scale, SpriteEffects.None, 0f);
                 return false;
             }
             else
                 return base.PreDrawInWorld(item, spriteBatch, lightColor, alphaColor, ref rotation, ref scale, whoAmI);
+        }
+
+        private void DoCoinAnimation(int whoAmI)
+        {
+            Main.itemFrameCounter[whoAmI] += 1;
+            if (Main.itemFrameCounter[whoAmI] > 5)
+            {
+                Main.itemFrameCounter[whoAmI] = 0;
+                Main.itemFrame[whoAmI] += 1;
+            }
+            if (Main.itemFrame[whoAmI] > 7)
+            {
+                Main.itemFrame[whoAmI] = 0;
+            }
         }
     }
 }
