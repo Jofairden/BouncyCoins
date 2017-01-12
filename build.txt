@@ -1,0 +1,10 @@
+﻿author = gorateron
+version = 0.1
+displayName = The Deconstructor Mod
+homepage = 
+hideCode = true
+hideResources = true
+includeSource = false
+buildIgnore = *.csproj, *.user, obj\*, bin\*, .vs\*
+includePDB = true
+languageVersion = 6
