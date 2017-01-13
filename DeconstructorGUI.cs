@@ -238,10 +238,10 @@ namespace TheDeconstructor
 						Item bagItem = new Item();
 						bagItem.SetDefaults(TheDeconstructor.instance.ItemType<DeconstructBagItem>());
 						parentPanel?.materials.ForEach(x => items.Add(x.item));
-						var deconItem = (bagItem.modItem as DeconstructBagItem);
-						deconItem.bagItems = items;
-						deconItem.sourceItem = guiInst.deconItemPanel.item.Clone();
-						deconItem.sourceItem.stack = (int)stackDiff;
+						var deconItemInfo = bagItem.GetModInfo<BagItemInfo>(TheDeconstructor.instance);
+						deconItemInfo.bagItems = new List<Item>(items);
+						deconItemInfo.sourceItem = (Item)guiInst.deconItemPanel.item.Clone();
+						deconItemInfo.sourceItem.stack = (int)stackDiff;
 						Main.LocalPlayer.GetItem(Main.myPlayer, bagItem);
 
 						// Reset item panel if needed

@@ -13,9 +13,7 @@ namespace TheDeconstructor
 {
 	public class DeconstructBagItem : ModItem
 	{
-		//public BagItemInfo info => item.GetModInfo<BagItemInfo>(mod);
-		public Item sourceItem = new Item();
-		public List<Item> bagItems = new List<Item>();
+		public BagItemInfo info => item.GetModInfo<BagItemInfo>(mod);
 
 		public override void SetDefaults()
 		{
@@ -34,8 +32,8 @@ namespace TheDeconstructor
 			{
 				TagCompound tc = new TagCompound
 				{
-					["items"] = (this.item.modItem as DeconstructBagItem).bagItems.Select(ItemIO.Save).ToList(),
-					["source"] = ItemIO.Save((this.item.modItem as DeconstructBagItem).sourceItem)
+					["items"] = info.bagItems.Select(ItemIO.Save).ToList(),
+					["source"] = info.sourceItem
 				};
 				return tc;
 			}
@@ -51,8 +49,8 @@ namespace TheDeconstructor
 			try
 			{
 				var list = tag.GetList<TagCompound>("items").ToList();
-				list.ForEach(x => (this.item.modItem as DeconstructBagItem)?.bagItems.Add(ItemIO.Load(x)));
-				(this.item.modItem as DeconstructBagItem).sourceItem = ItemIO.Load(tag.GetCompound("source"));
+				list.ForEach(x => info.bagItems.Add(ItemIO.Load(x)));
+				info.sourceItem = ItemIO.Load(tag.GetCompound("source"));
 			}
 			catch (Exception e)
 			{
@@ -69,10 +67,16 @@ namespace TheDeconstructor
 		{
 			try
 			{
-				if (bagItems != null)
+				if (info.bagItems != null && info.bagItems.Count >= 1)
 				{
-					foreach (var infoBagItem in bagItems)
+					// Need to figure out a way how to reset weapon prefixes
+
+					//Item giveItem = new Item();
+					foreach (var infoBagItem in info.bagItems)
 					{
+						//giveItem.SetDefaults(infoBagItem.type);
+						//var givenItem = player.GetItem(player.whoAmI, giveItem);
+						//givenItem.Prefix(0);
 						player.QuickSpawnItem(infoBagItem.type, infoBagItem.stack);
 					}
 
@@ -88,19 +92,18 @@ namespace TheDeconstructor
 
 		public override void ModifyTooltips(List<TooltipLine> tooltips)
 		{
-			Main.NewText($"IM FIRING");
-				if ((this.item.modItem as DeconstructBagItem).sourceItem != null && (this.item.modItem as DeconstructBagItem).sourceItem.type != 0)
-				{
-					tooltips.Add(new TooltipLine(mod, $"{mod.Name}: GoodieBag: Source",
-							$"Source:[i/s1:{sourceItem.type}][c/{GetTTColor(sourceItem).ToHexString().Substring(1)}:{sourceItem.name} ](x{sourceItem.stack})"));
-				}
-				tooltips.Add(new TooltipLine(mod, $"{mod.Name}: GoodieBag: Title", "Open this bag and receive:"));
-				foreach (var infoBagItem in (this.item.modItem as DeconstructBagItem).bagItems)
-				{
-					if (infoBagItem.type != 0)
-						tooltips.Add(new TooltipLine(mod, $"{mod.Name}: GoodieBag: Content: {infoBagItem.type}",
-							$"[i/s1:{infoBagItem.type}][c/{GetTTColor(infoBagItem).ToHexString().Substring(1)}:{infoBagItem.name} ](x{infoBagItem.stack})"));
-				}
+			if (info.sourceItem != null && info.sourceItem.type != 0)
+			{
+				tooltips.Add(new TooltipLine(mod, $"{mod.Name}: GoodieBag: Source",
+						$"Source:[i/s1:{info.sourceItem.type}][c/{GetTTColor(info.sourceItem).ToHexString().Substring(1)}:{info.sourceItem.name} ](x{info.sourceItem.stack})"));
+			}
+			tooltips.Add(new TooltipLine(mod, $"{mod.Name}: GoodieBag: Title", "Open this bag and receive:"));
+			foreach (var infoBagItem in info.bagItems)
+			{
+				if (infoBagItem.type != 0)
+					tooltips.Add(new TooltipLine(mod, $"{mod.Name}: GoodieBag: Content: {infoBagItem.type}",
+						$"[i/s1:{infoBagItem.type}][c/{GetTTColor(infoBagItem).ToHexString().Substring(1)}:{infoBagItem.name} ](x{infoBagItem.stack})"));
+			}
 		}
 
 		private Color GetTTColor(Item item)
@@ -174,11 +177,23 @@ namespace TheDeconstructor
 		public static void SetFromCopper(ref ItemValue iV, int c)
 		{
 			var totalCopper = c;
+			int totalSilver = totalCopper / 100;
+			int totalGold = totalCopper / 100 / 100;
 			int totalPlatinum = totalCopper/100/100/100;
-			int totalGold = totalCopper/100/100;
-			int totalSilver = totalCopper/100;
+		}
+	}
 
+	public class BagItemInfo : ItemInfo
+	{
+		public Item sourceItem = new Item();
+		public List<Item> bagItems = new List<Item>();
 
+		public override ItemInfo Clone()
+		{
+			var clone = new BagItemInfo();
+			clone.sourceItem = (Item)this.sourceItem.Clone();
+			clone.bagItems = new List<Item>(bagItems);
+			return clone;
 		}
 	}
 
