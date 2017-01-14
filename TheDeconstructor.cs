@@ -72,6 +72,7 @@ namespace TheDeconstructor
 					instance.deconGUI.Update(Main._drawInterfaceGameTime);
 				}
 				instance.deconGUI.visible = !instance.deconGUI.visible;
+				instance.deconGUI.ToggleUI();
 			}
 		}
 	}

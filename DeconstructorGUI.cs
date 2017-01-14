@@ -31,7 +31,9 @@ namespace TheDeconstructor
 		internal UIRecipeList recipeList;
 		internal UIScrollbar recipeScrollbar;
 
-		internal List<Recipe> currentRecipes;
+		internal static List<Recipe> currentRecipes;
+		internal static List<short> potionTypes; // used for checking costs
+		internal static string hoverString; // used for hovering stuff
 
 		public DeconstructorGUI()
 		{
@@ -43,6 +45,16 @@ namespace TheDeconstructor
 			_UIView.Left.Set(Main.screenWidth/2f - _UIView.Width.Pixels/2f, 0f);
 			_UIView.Top.Set(Main.screenHeight/2f - _UIView.Height.Pixels/2f, 0f);
 			base.Append(_UIView);
+
+			// Some reflection here, because item.potion only seems to be set for health potions
+			// Moved this here because there's no reason to continously call it
+			// Gets all types from the ItemID class which variable name contains "potion"
+			ItemID itemIDInst = new ItemID();
+			potionTypes = typeof(ItemID)
+				.GetFields()
+				.Where(field => field.Name.ToUpper().Contains("POTION"))
+				.Select(field => (short)field.GetValue(itemIDInst))
+				.ToList();
 		}
 
 		public override void OnInitialize()
@@ -138,15 +150,6 @@ namespace TheDeconstructor
 			recipeList.SetScrollbar(recipeScrollbar);
 			recipeList.Append(recipeScrollbar);
 
-
-
-			//for (int i = 0; i < 7; i++)
-			//{
-			//	var testP = new UIRecipePanel(recipeList.Width.Pixels - 3f*vpadding - recipeScrollbar.Width.Pixels, 200f);
-			//	//testP.Top.Set(testP.Top.Pixels + vpadding, 0f);
-			//	//testP.Left.Set(testP.Left.Pixels + vpadding, 0f);
-			//	recipeList.Add(testP);
-			//}
 		}
 
 		public void _Recalculate(Vector2 mousePos, float precent = 0f)
@@ -171,12 +174,45 @@ namespace TheDeconstructor
 			}
 		}
 
+		public void ToggleUI(bool force = false)
+		{
+			if (!deconItemPanel.item.IsAir && (!visible || force))
+			{
+				Main.LocalPlayer.GetItem(Main.myPlayer, deconItemPanel.item.Clone()); // does not seem to generate item text
+				deconItemPanel.item.SetDefaults(0);
+				recipeList.Clear();
+			}
+		}
+
+		public override void Update(GameTime gameTime)
+		{
+			base.Update(gameTime);
+
+			// :s which bools do I need??
+			if (Main.gameMenu)
+				ToggleUI(true);
+			if (Main.inputTextEscape)
+			{
+				visible = false;
+				ToggleUI(true);
+			}
+		}
+
 		internal class UIRecipePanel : UIPanel
 		{
 			internal Recipe embeddedRecipe;
 			internal float stackDiff;
+			internal bool potionSource;
+
+			internal ItemValue materialsValue;
+			internal ItemValue resultValue;
+			internal ItemValue deconstructValue;
+
 			public List<UIItemPanel> materials;
 			public UIRecipeBag recipeBag;
+
+			internal UIText errorText;
+			internal float errorTime;
 
 			public UIRecipePanel(float width, float height, float left = 0f, float top = 0f)
 			{
@@ -205,6 +241,14 @@ namespace TheDeconstructor
 				recipeBag.Top.Set(lastPanel.Top.Pixels + recipeBag.Height.Pixels/4f, 0f);
 				recipeBag.Left.Set(lastPanel.Width.Pixels + vpadding, 0f);
 				base.Append(recipeBag);
+
+				errorTime = 2;
+				errorText = new UIText("You do not have enough gold!");
+				errorText.Width.Set(25f, 0f);
+				errorText.Height.Set(25f, 0f);
+				errorText.Top.Set(recipeBag.Top.Pixels + Main.fontMouseText.MeasureString(errorText.Text).Y / 2f, 0f);
+				errorText.Left.Set(recipeBag.Left.Pixels + recipeBag.Width.Pixels + vpadding, 0f);
+				base.Append(errorText);
 			}
 
 			public override void OnInitialize()
@@ -212,6 +256,20 @@ namespace TheDeconstructor
 				foreach (var panel in materials)
 				{
 					base.Append(panel);
+				}
+			}
+
+			public override void Update(GameTime gameTime)
+			{
+				base.Update(gameTime);
+
+				if (errorTime > 0f)
+				{
+					errorTime -= 1f;
+					if (errorTime <= 0f)
+					{
+						errorText.SetText("");
+					}
 				}
 			}
 		}
@@ -224,24 +282,33 @@ namespace TheDeconstructor
 				{
 					if (Parent != null)
 					{
-						var parentPanel = (Parent as UIRecipePanel);
+						var recipePanel = (Parent as UIRecipePanel);
 						var guiInst = TheDeconstructor.instance.deconGUI;
 						var items = new List<Item>();
 
+						// Tries to 'buy'
+						if (!Main.LocalPlayer.BuyItemOld(recipePanel.deconstructValue.RawValue))
+						{
+							recipePanel.errorTime = 550f;
+							recipePanel.errorText.SetText("You do not have enough gold!");
+							return;
+						}
+
 						// Remove stacks from panel item based on recipe cost
 						var stack = guiInst.deconItemPanel.item.stack;
-						var stackDiff = (float)stack / (float)parentPanel.embeddedRecipe.createItem.stack;
-						stackDiff *= parentPanel.embeddedRecipe.createItem.stack;
+						var stackDiff = (float)stack / (float)recipePanel.embeddedRecipe.createItem.stack;
+						stackDiff *= recipePanel.embeddedRecipe.createItem.stack;
 						guiInst.deconItemPanel.item.stack -= (int)stackDiff;
 
 						// Give the new bag item
 						Item bagItem = new Item();
 						bagItem.SetDefaults(TheDeconstructor.instance.ItemType<DeconstructBagItem>());
-						parentPanel?.materials.ForEach(x => items.Add(x.item));
-						var deconItemInfo = bagItem.GetModInfo<BagItemInfo>(TheDeconstructor.instance);
-						deconItemInfo.bagItems = new List<Item>(items);
-						deconItemInfo.sourceItem = (Item)guiInst.deconItemPanel.item.Clone();
-						deconItemInfo.sourceItem.stack = (int)stackDiff;
+						recipePanel?.materials.ForEach(x => items.Add(x.item));
+						var bagInfo = bagItem.GetModInfo<BagItemInfo>(TheDeconstructor.instance);
+						bagInfo.bagItems = new List<Item>(items);
+						bagInfo.sourceItem = (Item)guiInst.deconItemPanel.item.Clone();
+						bagInfo.sourceItem.stack = (int)stackDiff;
+						bagInfo.potionSource = recipePanel.potionSource;
 						Main.LocalPlayer.GetItem(Main.myPlayer, bagItem);
 
 						// Reset item panel if needed
@@ -259,14 +326,12 @@ namespace TheDeconstructor
 			{
 				if (base.IsMouseHovering)
 				{
-					var guiInst = TheDeconstructor.instance.deconGUI;
 					var parentPanel = (Parent as UIRecipePanel);
-					float materialsPrice = 0f;
-					for (int i = 0; i < parentPanel?.materials.Count; i++)
-					{
-						materialsPrice += parentPanel.materials[i].item.value * parentPanel.materials[i].item.stack;
-					}
-					Main.hoverItemName = $"Click to receive recipe materials in a goodie bag\nResult worth: {guiInst.deconItemPanel.item.value * guiInst.deconItemPanel.item.stack} copper\nRecipe worth: {materialsPrice} copper";
+					Main.hoverItemName =
+						$"{hoverString}Click to receive recipe materials in a goodie bag" +
+						$"\nResult worth: {parentPanel?.resultValue}" +
+						$"\nRecipe worth: {parentPanel?.materialsValue}" +
+						$"\nDeconstruction cost: {parentPanel?.deconstructValue}";
 				}
 			}
 		}
@@ -305,12 +370,16 @@ namespace TheDeconstructor
 
 			public override void Update(GameTime gameTime)
 			{
+				// Is right clicking?
 				rightClicking = Main.mouseRight && base.IsMouseHovering;
 
+				// If right clicking, and is a good item
 				if (rightClicking && item.type != 0)
 				{
+					// Open inventory
 					Main.playerInventory = true;
 
+					// Handle stack splitting here
 					if (Main.stackSplit <= 1 && item.type != 0 && (Main.mouseItem.IsTheSameAs(item) || Main.mouseItem.type == 0))
 					{
 						int num2 = Main.superFastStack + 1;
@@ -334,7 +403,7 @@ namespace TheDeconstructor
 								Main.mouseItem.stack++;
 								item.stack--;
 								TheDeconstructor.instance.deconGUI.recipeList.Clear();
-								RecipeSearcher.FillWithRecipes(item, TheDeconstructor.instance.deconGUI.currentRecipes,
+								RecipeSearcher.FillWithRecipes(item, currentRecipes,
 									TheDeconstructor.instance.deconGUI.recipeList, TheDeconstructor.instance.deconGUI.recipeScrollbar.Width.Pixels);
 								if (Main.stackSplit == 0)
 								{
@@ -366,7 +435,9 @@ namespace TheDeconstructor
 				{
 					Main.hoverItemName = item.name;
 					Main.toolTip = item.Clone();
-					Main.toolTip.name = Main.toolTip.name + (Main.toolTip.modItem != null ? $" [{Main.toolTip.modItem.mod.Name}]" : "");
+					Main.toolTip.GetModInfo<DeconItemInfo>(TheDeconstructor.instance).addValueTooltip = true;
+					//ItemValue value = new ItemValue().SetFromCopperValue(item.value*item.stack);
+					Main.toolTip.name = $"{Main.toolTip.name}{Main.toolTip.modItem?.mod.Name.Insert((int)Main.toolTip.modItem?.mod.Name.Length, "]").Insert(0, " [")}";
 				}
 
 				CalculatedStyle innerDimensions = base.GetInnerDimensions();
@@ -406,9 +477,10 @@ namespace TheDeconstructor
 						Vector2.Zero, drawScale, SpriteEffects.None, 0f);
 				}
 
+				// Draw stack count
 				if (this.item.stack > 1)
 				{
-					spriteBatch.DrawString(Main.fontItemStack, this.item.stack.ToString(), new Vector2(innerDimensions.Position().X + 10f * drawScale, innerDimensions.Position().Y + 26f * drawScale), Color.White, 0f, Vector2.Zero, drawScale, SpriteEffects.None, 0f);
+					spriteBatch.DrawString(Main.fontItemStack, Math.Min(9999, item.stack).ToString(), new Vector2(innerDimensions.Position().X + 10f * drawScale, innerDimensions.Position().Y + 26f * drawScale), Color.White, 0f, Vector2.Zero, drawScale, SpriteEffects.None, 0f);
 				}
 			}
 		}
@@ -424,17 +496,63 @@ namespace TheDeconstructor
 			{
 				foreach (var recipe in recipes)
 				{
+					// Setup new recipe panel
 					var recipePanel = new UIRecipePanel(list.Width.Pixels - 3f * vpadding - offset, 200f);
 					recipePanel.Initialize();
-					recipePanel.embeddedRecipe = recipe;
+					recipePanel.embeddedRecipe = recipe; // set embedded recipe
+
+					// Set item values
+					recipePanel.materialsValue = new ItemValue();
+					recipePanel.resultValue = new ItemValue().SetFromCopperValue(source.value*source.stack).ToSellValue();
+					recipePanel.deconstructValue = new ItemValue();
+
+					var mats = recipePanel.materials;
+					var reqItems = recipe.requiredItem;
+					// Loop all material slots
 					for (int i = 0; i < recipePanel.materials.Count; i++)
 					{
-						recipePanel.materials[i].item = recipe.requiredItem[i].Clone();
+						if (reqItems[i].type == 0) break; // no more materials in this recipe
 
+						mats[i].item = reqItems[i].Clone(); // clone material
+
+						// calc stack diff and at it to the matarial stack
 						float stackDiff = (float) (source.stack - recipe.createItem.stack)/(float) recipe.createItem.stack;
-						if (stackDiff > 0)
-							recipePanel.materials[i].item.stack += recipePanel.materials[i].item.stack * (int)stackDiff;
+						mats[i].item.stack += recipePanel.materials[i].item.stack * (int)stackDiff;
+
+						// Add material values
+						recipePanel.materialsValue.AddValues(mats[i].item.value*mats[i].item.stack);
 					}
+
+					recipePanel.materialsValue.ToSellValue();
+
+					// Values to usse
+					int diffValue = (int) Math.Abs(recipePanel.resultValue.RawValue - recipePanel.materialsValue.RawValue);
+					int combinedValue = (int) Math.Abs(recipePanel.resultValue.RawValue + recipePanel.materialsValue.RawValue);
+					int sourcePrefixValue = (int) (recipePanel.resultValue.RawValue/ 3f);
+					hoverString = "";
+
+					// Set proper deconstruct value
+					if (source.Prefix(-3)) // -3 checks if item is prefixable, -2 forced random prefix (always get one), -1 random prefix
+					{
+						int useValue = sourcePrefixValue < combinedValue ? combinedValue : sourcePrefixValue;
+						recipePanel.deconstructValue.SetFromCopperValue(useValue);
+					}
+					else if (source.potion || potionTypes.Any(type => (int)type == source.type))
+					{
+						recipePanel.potionSource = true;
+						recipePanel.deconstructValue.SetFromCopperValue(combinedValue);
+						hoverString = "Deconstructing potions has a chance of destroying recipe materials!\n";
+					}
+					else
+					{
+						recipePanel.deconstructValue.SetFromCopperValue(diffValue);
+					}
+
+					recipePanel.deconstructValue.ApplyDiscount(Main.LocalPlayer);
+					recipePanel.deconstructValue *= 1.2f;
+					//recipePanel.resultValue.ApplyDiscount(Main.LocalPlayer).ToSellValue();
+					//
+
 					list.Add(recipePanel);
 				}
 			}

@@ -33,7 +33,7 @@ namespace TheDeconstructor
 				TagCompound tc = new TagCompound
 				{
 					["items"] = info.bagItems.Select(ItemIO.Save).ToList(),
-					["source"] = info.sourceItem
+					["source"] = ItemIO.Save(info.sourceItem)
 				};
 				return tc;
 			}
@@ -74,10 +74,34 @@ namespace TheDeconstructor
 					//Item giveItem = new Item();
 					foreach (var infoBagItem in info.bagItems)
 					{
+						if (infoBagItem.type == 0) break;
 						//giveItem.SetDefaults(infoBagItem.type);
 						//var givenItem = player.GetItem(player.whoAmI, giveItem);
 						//givenItem.Prefix(0);
-						player.QuickSpawnItem(infoBagItem.type, infoBagItem.stack);
+
+						//the UI can add materials beyond their maxStack.
+						//so this should ensure items are given in multiple stacks if they exceed their maxStack
+						int stackDiff = Math.Max(1, infoBagItem.stack/infoBagItem.maxStack);
+						int useStack = stackDiff > 1 ? infoBagItem.maxStack : infoBagItem.stack;
+						int leftOver = infoBagItem.stack - infoBagItem.maxStack*stackDiff;
+						for (int i = 0; i < stackDiff; i++)
+						{
+							if (info.potionSource && Main.rand.NextFloat() <= 0.2f)
+							{
+								NotifyLoss(infoBagItem.type, useStack);
+								continue;
+							}
+							player.QuickSpawnItem(infoBagItem.type, useStack);
+						}
+						if (leftOver > 0)
+						{
+							if (info.potionSource && Main.rand.NextFloat() <= 0.2f)
+							{
+								NotifyLoss(infoBagItem.type, useStack);
+								continue;
+							}
+							player.QuickSpawnItem(infoBagItem.type, leftOver);
+						}
 					}
 
 					//item.ResetStats(item.type);
@@ -90,54 +114,35 @@ namespace TheDeconstructor
 			}
 		}
 
+		private void NotifyLoss(int type, int stack)
+		{
+			string str = $"Oh noes! You've lost [i/s1:{type}] (x{stack})!";
+			Main.NewText(str, 255);
+			if (Main.netMode == 1)
+				NetMessage.SendData(MessageID.ChatText, -1, -1, str, 255);
+		}
+
 		public override void ModifyTooltips(List<TooltipLine> tooltips)
 		{
 			if (info.sourceItem != null && info.sourceItem.type != 0)
 			{
 				tooltips.Add(new TooltipLine(mod, $"{mod.Name}: GoodieBag: Source",
-						$"Source:[i/s1:{info.sourceItem.type}][c/{GetTTColor(info.sourceItem).ToHexString().Substring(1)}:{info.sourceItem.name} ](x{info.sourceItem.stack})"));
+						$"Source: [i/s1:{info.sourceItem.type}][c/{info.sourceItem.GetTooltipColor().ToHexString().Substring(1)}:{info.sourceItem.name} ](x{info.sourceItem.stack})"));
 			}
 			tooltips.Add(new TooltipLine(mod, $"{mod.Name}: GoodieBag: Title", "Open this bag and receive:"));
 			foreach (var infoBagItem in info.bagItems)
 			{
 				if (infoBagItem.type != 0)
 					tooltips.Add(new TooltipLine(mod, $"{mod.Name}: GoodieBag: Content: {infoBagItem.type}",
-						$"[i/s1:{infoBagItem.type}][c/{GetTTColor(infoBagItem).ToHexString().Substring(1)}:{infoBagItem.name} ](x{infoBagItem.stack})"));
+						$"[i/s1:{infoBagItem.type}][c/{infoBagItem.GetTooltipColor().ToHexString().Substring(1)}:{infoBagItem.name} ](x{infoBagItem.stack})"));
 			}
-		}
 
-		private Color GetTTColor(Item item)
-		{
-			if (item.questItem) return Colors.RarityAmber;
-			switch (item.rare)
+			if (info.potionSource)
 			{
-				default:
-				case -1:
-					return Colors.RarityTrash;
-				case 0:
-					return Colors.RarityNormal;
-				case 1:
-					return Colors.RarityBlue;
-				case 2:
-					return Colors.RarityGreen;
-				case 3:
-					return Colors.RarityOrange;
-				case 4:
-					return Colors.RarityRed*0.75f;
-				case 5:
-					return Colors.RarityPink;
-				case 6:
-					return Colors.RarityPurple;
-				case 7:
-					return Colors.RarityLime;
-				case 8:
-					return Colors.RarityYellow;
-				case 9:
-					return Colors.RarityCyan;
-				case 10:
-					return Colors.RarityRed;
-				case 11:
-					return Colors.RarityPurple;
+				var tt = new TooltipLine(mod, $"{mod.Name}: GoodieBag: Potion Warning",
+					$"Chance of material loss");
+				tt.overrideColor = Colors.RarityRed;
+				tooltips.Add(tt);
 			}
 		}
 	}
@@ -149,50 +154,20 @@ namespace TheDeconstructor
 		public static string ToRgbString(this Color c) => $"RGB({c.R}, {c.G}, {c.B})";
 	}
 
-	public struct ItemValue
-	{
-		public int copper;
-		public int silver;
-		public int gold;
-		public int platinum;
 
-		public override string ToString()
-		{
-			string s = "";
-			s += copper > 0 ? $"[c/{new Color(205, 133, 63).ToHexString()}:{copper}c]" : "";
-			s += silver > 0 ? $"[c/{new Color(220, 220, 220).ToHexString()}:{silver}s]" : "";
-			s += gold > 0 ? $"[c/{new Color(255, 218, 155).ToHexString()}:{gold}g]" : "";
-			s += platinum > 0 ? $"[c/{new Color(230, 230, 250)}:{platinum}p]" : "";
-			return s;
-		}
-
-		public static void SetValues(ref ItemValue iV, int c, int s, int g, int p)
-		{
-			iV.copper = c;
-			iV.silver = s;
-			iV.gold = g;
-			iV.platinum = p;
-		}
-
-		public static void SetFromCopper(ref ItemValue iV, int c)
-		{
-			var totalCopper = c;
-			int totalSilver = totalCopper / 100;
-			int totalGold = totalCopper / 100 / 100;
-			int totalPlatinum = totalCopper/100/100/100;
-		}
-	}
 
 	public class BagItemInfo : ItemInfo
 	{
 		public Item sourceItem = new Item();
 		public List<Item> bagItems = new List<Item>();
+		public bool potionSource = false;
 
 		public override ItemInfo Clone()
 		{
 			var clone = new BagItemInfo();
 			clone.sourceItem = (Item)this.sourceItem.Clone();
 			clone.bagItems = new List<Item>(bagItems);
+			clone.potionSource = potionSource;
 			return clone;
 		}
 	}
