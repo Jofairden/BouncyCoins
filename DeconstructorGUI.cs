@@ -71,16 +71,14 @@ namespace TheDeconstructor
 				dragging = true;
 			};
 			basePanel.CopyStyle(this);
+			basePanel.SetPadding(vpadding);
 			_UIView.Append(basePanel);
 
 			baseTitle = new UIText("Deconstructor", 0.85f, true);
 			basePanel.Append(baseTitle);
 
 			closeButton = new UIImageButton(TheDeconstructor.instance.GetTexture("closeButton"));
-			closeButton.OnClick += (s, e) =>
-			{
-				visible = false;
-			};
+			closeButton.OnClick += (s, e) => { visible = false; };
 			closeButton.Width.Set(20f, 0f);
 			closeButton.Height.Set(20f, 0f);
 			closeButton.Left.Set(basePanel.Width.Pixels - closeButton.Width.Pixels * 2f - vpadding * 4f, 0f);
@@ -90,8 +88,10 @@ namespace TheDeconstructor
 			deconItemPanel = new UIItemPanel();
 			deconItemPanel.OnClick += (s, e) =>
 			{
-				Main.playerInventory = true;
+				if (Main.mouseItem?.type == TheDeconstructor.instance.ItemType<DeconstructBagItem>()) return; // prevents item info breaking when using rmb when bag is in slot
+
 				var panel = (e as UIItemPanel);
+				Main.playerInventory = true;
 				if (panel?.item.type != 0 && Main.mouseItem.type != 0)
 				{
 					if (panel?.item.type != Main.mouseItem.type)
@@ -189,9 +189,7 @@ namespace TheDeconstructor
 			base.Update(gameTime);
 
 			// :s which bools do I need??
-			if (Main.gameMenu)
-				ToggleUI(true);
-			if (Main.inputTextEscape)
+			if (Main.inputTextEscape || Main.LocalPlayer.dead || Main.gameMenu)
 			{
 				visible = false;
 				ToggleUI(true);
@@ -548,6 +546,8 @@ namespace TheDeconstructor
 						recipePanel.deconstructValue.SetFromCopperValue(diffValue);
 					}
 
+					if (recipePanel.deconstructValue.RawValue <= 0)
+						recipePanel.deconstructValue.SetFromCopperValue(Item.buyPrice(0, 0, 50, 30));
 					recipePanel.deconstructValue.ApplyDiscount(Main.LocalPlayer);
 					recipePanel.deconstructValue *= 1.2f;
 					//recipePanel.resultValue.ApplyDiscount(Main.LocalPlayer).ToSellValue();

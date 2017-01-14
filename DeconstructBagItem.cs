@@ -81,9 +81,9 @@ namespace TheDeconstructor
 
 						//the UI can add materials beyond their maxStack.
 						//so this should ensure items are given in multiple stacks if they exceed their maxStack
-						int stackDiff = Math.Max(1, infoBagItem.stack/infoBagItem.maxStack);
+						int stackDiff = Math.Max(1, (int)Math.Floor((double)(infoBagItem.stack/(double)infoBagItem.maxStack)));
 						int useStack = stackDiff > 1 ? infoBagItem.maxStack : infoBagItem.stack;
-						int leftOver = infoBagItem.stack - infoBagItem.maxStack*stackDiff;
+						int leftOver = stackDiff > 1 ? infoBagItem.stack - useStack*stackDiff : 0;
 						for (int i = 0; i < stackDiff; i++)
 						{
 							if (info.potionSource && Main.rand.NextFloat() <= 0.2f)
