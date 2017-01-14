@@ -220,11 +220,13 @@ namespace TheDeconstructor
 					UIItemPanel matPanel = new UIItemPanel();
 					matPanel.Left.Set((matPanel.Width.Pixels + vpadding/2f)*(i%7), 0f);
 					matPanel.Top.Set(i < 7 ? 0f : matPanel.Height.Pixels + vpadding/2f, 0f);
+					matPanel.displayOnly = true;
 					materials.Add(matPanel);
 				}
 				UIItemPanel lastPanel = new UIItemPanel();
 				lastPanel.Left.Set(0f, 0f);
 				lastPanel.Top.Set(2f*lastPanel.Height.Pixels + vpadding, 0f);
+				lastPanel.displayOnly = true;
 				materials.Add(lastPanel);
 
 				base.Width.Set(width, 0f);
@@ -302,11 +304,11 @@ namespace TheDeconstructor
 						Item bagItem = new Item();
 						bagItem.SetDefaults(TheDeconstructor.instance.ItemType<DeconstructBagItem>());
 						recipePanel?.materials.ForEach(x => items.Add(x.item));
-						var bagInfo = bagItem.GetModInfo<BagItemInfo>(TheDeconstructor.instance);
-						bagInfo.bagItems = new List<Item>(items);
-						bagInfo.sourceItem = (Item)guiInst.deconItemPanel.item.Clone();
-						bagInfo.sourceItem.stack = (int)stackDiff;
-						bagInfo.potionSource = recipePanel.potionSource;
+						DeconstructBagItem bag = bagItem.modItem as DeconstructBagItem;
+						bag.bagItems = new List<Item>(items);
+						bag.sourceItem = (Item)guiInst.deconItemPanel.item.Clone();
+						bag.sourceItem.stack = (int)stackDiff;
+						bag.potionSource = recipePanel.potionSource;
 						Main.LocalPlayer.GetItem(Main.myPlayer, bagItem);
 
 						// Reset item panel if needed
@@ -355,6 +357,7 @@ namespace TheDeconstructor
 			internal const float panelpadding = 0f;
 			private bool rightClicking = false;
 			public Item item;
+			public bool displayOnly;
 
 			public UIItemPanel(int type = 0, int stack = 0)
 			{
@@ -368,6 +371,8 @@ namespace TheDeconstructor
 
 			public override void Update(GameTime gameTime)
 			{
+				if (displayOnly) return;
+
 				// Is right clicking?
 				rightClicking = Main.mouseRight && base.IsMouseHovering;
 

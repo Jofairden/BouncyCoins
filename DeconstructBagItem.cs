@@ -13,7 +13,9 @@ namespace TheDeconstructor
 {
 	public class DeconstructBagItem : ModItem
 	{
-		public BagItemInfo info => item.GetModInfo<BagItemInfo>(mod);
+		public Item sourceItem = new Item();
+		public List<Item> bagItems = new List<Item>();
+		public bool potionSource = false;
 
 		public override void SetDefaults()
 		{
@@ -32,8 +34,8 @@ namespace TheDeconstructor
 			{
 				TagCompound tc = new TagCompound
 				{
-					["items"] = info.bagItems.Select(ItemIO.Save).ToList(),
-					["source"] = ItemIO.Save(info.sourceItem)
+					["items"] = bagItems.Select(ItemIO.Save).ToList(),
+					["source"] = ItemIO.Save(sourceItem)
 				};
 				return tc;
 			}
@@ -49,8 +51,8 @@ namespace TheDeconstructor
 			try
 			{
 				var list = tag.GetList<TagCompound>("items").ToList();
-				list.ForEach(x => info.bagItems.Add(ItemIO.Load(x)));
-				info.sourceItem = ItemIO.Load(tag.GetCompound("source"));
+				list.ForEach(x => bagItems.Add(ItemIO.Load(x)));
+				sourceItem = ItemIO.Load(tag.GetCompound("source"));
 			}
 			catch (Exception e)
 			{
@@ -67,12 +69,12 @@ namespace TheDeconstructor
 		{
 			try
 			{
-				if (info.bagItems != null && info.bagItems.Count >= 1)
+				if (bagItems != null && bagItems.Count >= 1)
 				{
 					// Need to figure out a way how to reset weapon prefixes
 
 					//Item giveItem = new Item();
-					foreach (var infoBagItem in info.bagItems)
+					foreach (var infoBagItem in bagItems)
 					{
 						if (infoBagItem.type == 0) break;
 						//giveItem.SetDefaults(infoBagItem.type);
@@ -86,7 +88,7 @@ namespace TheDeconstructor
 						int leftOver = stackDiff > 1 ? infoBagItem.stack - useStack*stackDiff : 0;
 						for (int i = 0; i < stackDiff; i++)
 						{
-							if (info.potionSource && Main.rand.NextFloat() <= 0.2f)
+							if (potionSource && Main.rand.NextFloat() <= 0.2f)
 							{
 								NotifyLoss(infoBagItem.type, useStack);
 								continue;
@@ -95,7 +97,7 @@ namespace TheDeconstructor
 						}
 						if (leftOver > 0)
 						{
-							if (info.potionSource && Main.rand.NextFloat() <= 0.2f)
+							if (potionSource && Main.rand.NextFloat() <= 0.2f)
 							{
 								NotifyLoss(infoBagItem.type, useStack);
 								continue;
@@ -124,26 +126,38 @@ namespace TheDeconstructor
 
 		public override void ModifyTooltips(List<TooltipLine> tooltips)
 		{
-			if (info.sourceItem != null && info.sourceItem.type != 0)
+			if (sourceItem != null && sourceItem.type != 0)
 			{
 				tooltips.Add(new TooltipLine(mod, $"{mod.Name}: GoodieBag: Source",
-						$"Source: [i/s1:{info.sourceItem.type}][c/{info.sourceItem.GetTooltipColor().ToHexString().Substring(1)}:{info.sourceItem.name} ](x{info.sourceItem.stack})"));
+						$"Source: [i/s1:{sourceItem.type}][c/{sourceItem.GetTooltipColor().ToHexString().Substring(1)}:{sourceItem.name} ](x{sourceItem.stack})"));
 			}
 			tooltips.Add(new TooltipLine(mod, $"{mod.Name}: GoodieBag: Title", "Open this bag and receive:"));
-			foreach (var infoBagItem in info.bagItems)
+			foreach (var infoBagItem in bagItems)
 			{
 				if (infoBagItem.type != 0)
 					tooltips.Add(new TooltipLine(mod, $"{mod.Name}: GoodieBag: Content: {infoBagItem.type}",
 						$"[i/s1:{infoBagItem.type}][c/{infoBagItem.GetTooltipColor().ToHexString().Substring(1)}:{infoBagItem.name} ](x{infoBagItem.stack})"));
 			}
 
-			if (info.potionSource)
+			if (potionSource)
 			{
 				var tt = new TooltipLine(mod, $"{mod.Name}: GoodieBag: Potion Warning",
 					$"Chance of material loss");
 				tt.overrideColor = Colors.RarityRed;
 				tooltips.Add(tt);
 			}
+		}
+
+		public override bool CloneNewInstances => true;
+
+		// I'm not actually sure if this is needed
+		public override ModItem Clone(Item item)
+		{
+			var clone = new DeconstructBagItem();
+			clone.sourceItem = (Item)this.sourceItem.Clone();
+			clone.bagItems = new List<Item>(bagItems);
+			clone.potionSource = potionSource;
+			return clone;
 		}
 	}
 
@@ -152,24 +166,6 @@ namespace TheDeconstructor
 		public static string ToHexString(this Color c) => $"#{c.R:X2}{c.G:X2}{c.B:X2}";
 
 		public static string ToRgbString(this Color c) => $"RGB({c.R}, {c.G}, {c.B})";
-	}
-
-
-
-	public class BagItemInfo : ItemInfo
-	{
-		public Item sourceItem = new Item();
-		public List<Item> bagItems = new List<Item>();
-		public bool potionSource = false;
-
-		public override ItemInfo Clone()
-		{
-			var clone = new BagItemInfo();
-			clone.sourceItem = (Item)this.sourceItem.Clone();
-			clone.bagItems = new List<Item>(bagItems);
-			clone.potionSource = potionSource;
-			return clone;
-		}
 	}
 
 	///  fuck you bitch
