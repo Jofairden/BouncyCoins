@@ -1,6 +1,8 @@
 Makes coins bounce, because it looks fancy. <3
 This mod REQUIRES tModLoader v0.8.3.5 or higher!
-Current version: v0.1.2
+Current version: v0.2
+NEW in this version!
+Improved code! There is now a UI which you can use to change settings of this mod! Make coins bounce with a bigger amplitude, make them bounce faster!
+
 Since v0.1.2: coins bounce unevenly (seems to be more pupular)
-Download v0.1.1 if you want coins to bounce evenly
 (for downloads, click the homepage button)
