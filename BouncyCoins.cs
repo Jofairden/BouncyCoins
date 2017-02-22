@@ -13,8 +13,10 @@ namespace BouncyCoins
 	public class BouncyCoins : Mod
 	{
 
-        // (c) gorateron/jofairden
-        // version 0.1.2.2
+		// (c) gorateron/jofairden
+		// version 0.1.2.2
+
+		public static BouncyCoins instance { get; protected set; }
 
 		public BouncyCoins()
 		{
@@ -23,73 +25,71 @@ namespace BouncyCoins
 				Autoload = true,
 				AutoloadGores = true,
 				AutoloadSounds = true,
-                AutoloadBackgrounds = true
+				AutoloadBackgrounds = true
 			};
 		}
 
-        public override void Load()
-        {
-            Version reqVer = new Version(0, 8, 3, 5);
-            if (ModLoader.version < reqVer)
-            {
-                string message = $"\nBouncy Coins uses a functionality only present in tModLoader version {reqVer} or higher. Please update tModLoader to use this mod.\n\n";
-                throw new Exception(message);
-            }
-        }
-    }
+		public override void Load()
+		{
+			instance = this;
+			Version reqVer = new Version(0, 8, 3, 5);
+			if (ModLoader.version >= reqVer) return;
+			string message = $"\nBouncy Coins uses a functionality only present in tModLoader version {reqVer} or higher. Please update tModLoader to use this mod.\n\n";
+			throw new Exception(message);
+		}
+	}
 
 	public class CoinItem : GlobalItem
 	{
 		// Bouncy coins <3
 		public override bool PreDrawInWorld(Item item, SpriteBatch spriteBatch, Color lightColor, Color alphaColor, ref float rotation, ref float scale, int whoAmI)
 		{
-			var player = CoinPlayer.GetModPlayer(Main.LocalPlayer, mod);
+			var player = CoinPlayer.GetModPlayer(Main.LocalPlayer);
 
-			if ((player.disallowModItems && item.modItem == null) || !player.bouncyItems.Contains(item.type) || item.velocity.Length() > 0f)
-				return base.PreDrawInWorld(item, spriteBatch, lightColor, alphaColor, ref rotation, ref scale, whoAmI);
+			if ((player.disallowModItems && item.modItem == null)
+				|| !player.bouncyItems.Contains(item.type)
+				|| item.velocity.Length() > 0f)
+				return true;
 
 			Texture2D texture = Main.itemTexture[item.type];
-            Texture2D animTexture = Main.coinTexture[item.type - 71];
-            rotation = item.velocity.X * 0.2f;
-            float offsetY = item.height - texture.Height;
-            float offsetX = item.width * 0.5f - texture.Width * 0.5f;
+			Texture2D animTexture = Main.coinTexture[item.type - 71];
+			rotation = item.velocity.X * 0.2f;
+			float offsetY = item.height - texture.Height;
+			float offsetX = item.width * 0.5f - texture.Width * 0.5f;
 			int frameHeight = animTexture.Height / 8;
 			int angle = player.bounceEvenly ? (int)Main.time : whoAmI % 60 + item.spawnTime;
-	        angle += (int)player.universalOffset;
+			angle += (int)player.universalOffset;
 
-	        if (player.keyFrameActions.ContainsKey(item.type) && player.keyFrameActions[item.type] != null)
+			if (player.keyFrameActions.ContainsKey(item.type) && player.keyFrameActions[item.type] != null)
 				player.keyFrameActions[item.type].Invoke(whoAmI);
-	        else player.coinKeyFrameAction(whoAmI);
+			else player.coinKeyFrameAction(whoAmI);
 
-            Rectangle? frameRect = new Rectangle?(
-                                                    new Rectangle(
-                                                    0, 
-                                                    Main.itemFrame[whoAmI] * frameHeight + 1, 
-                                                    texture.Width, 
-                                                    frameHeight
-                                                    ));
+			Rectangle? frameRect = new Rectangle?(
+				new Rectangle(
+					0,
+					Main.itemFrame[whoAmI] * frameHeight + 1,
+					texture.Width,
+					frameHeight
+				));
 
-            Vector2 center = new Vector2(0f, 
-                                            frameHeight * 0.5f);
+			Vector2 center = new Vector2(0f, frameHeight * 0.5f);
 
-            Vector2 offset = new Vector2(0f,
-											player.amplitude * (float)Math.Cos(angle * player.speed));
+			Vector2 offset = new Vector2(0f, player.amplitude * (float)Math.Cos(angle * player.speed));
 
-            Vector2 pos = new Vector2(item.position.X - Main.screenPosition.X + animTexture.Width * 0.5f + offsetX, 
-                                        item.position.Y - Main.screenPosition.Y + frameHeight * 0.5f + offsetY) 
-                                        - center + offset;
+			Vector2 pos = new Vector2(item.position.X - Main.screenPosition.X + animTexture.Width * 0.5f + offsetX,
+							item.position.Y - Main.screenPosition.Y + frameHeight * 0.5f + offsetY)
+						  - center + offset;
 
-            Vector2 origin = new Vector2(texture.Width * 0.5f, 
-                                            frameHeight * 0.5f);
+			Vector2 origin = new Vector2(texture.Width * 0.5f, frameHeight * 0.5f);
 
-            Main.spriteBatch.Draw(animTexture, pos, frameRect, alphaColor, rotation, origin, scale, SpriteEffects.None, 0f);
-            return false;
-        }
-    }
+			Main.spriteBatch.Draw(animTexture, pos, frameRect, alphaColor, rotation, origin, scale, SpriteEffects.None, 0f);
+			return false;
+		}
+	}
 
 	public class CoinPlayer : ModPlayer
 	{
-		public static CoinPlayer GetModPlayer(Player player, Mod mod) => player.GetModPlayer<CoinPlayer>(mod);
+		public static CoinPlayer GetModPlayer(Player player) => player.GetModPlayer<CoinPlayer>(BouncyCoins.instance);
 
 		public delegate void keyFrameActionDelegate(int whoAmI);
 
@@ -119,11 +119,11 @@ namespace BouncyCoins
 			keyFrameActions.Add(type, keyFrameAction);
 		}
 
-		public void RemoveBouncyItem(int type)
+		public bool RemoveBouncyItem(int type)
 		{
-			if (!bouncyItems.Contains(type)) return;
-			bouncyItems.Remove(type);
-			keyFrameActions.Remove(type);
+			if (!bouncyItems.Contains(type)) return false;
+			bool b = bouncyItems.Remove(type);
+			return keyFrameActions.Remove(type) && b;
 		}
 
 		internal bool bounceEvenly = false;
@@ -156,9 +156,9 @@ namespace BouncyCoins
 
 		public override void Load(TagCompound tag)
 		{
-			bounceEvenly = tag.GetBool("bouncEvenly");
+			bounceEvenly = tag.GetBool("bounceEvenly");
 			disallowModItems = tag.GetBool("disallowModItems");
-			bouncyItems = new List<int>(tag.GetList<int>("bounceItems"));
+			bouncyItems = tag.GetList<int>("bouncyItems").ToList<int>();
 			amplitude = tag.GetFloat("amplitude");
 			speed = tag.GetFloat("speed");
 			universalOffset = tag.GetFloat("universalOffset");
