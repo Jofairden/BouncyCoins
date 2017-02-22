@@ -1,7 +1,10 @@
 author = Jofairden
 version = 0.2
 displayName = Bouncy Coins
-buildIgnore = *.csproj, *.user, obj\*, bin\*, .vs\*, *.sln, *.psd, \*.psd, *\*.psd, resources\*, modrelease\*, *.git, *.gitignore, *.git*
+buildIgnore = *.csproj, *.user, obj\*, bin\*, .vs\*, *.sln, *.psd, \*.psd, *\*.psd, resources\*, modrelease\*, *.git, *.gitignore, *.git*, .travis.yml
 includePDB = true
 homepage = http://forums.terraria.org/index.php?threads/.50249/
 languageVersion = 6
+hideCode = false
+hideResources = false
+includeSource = true
