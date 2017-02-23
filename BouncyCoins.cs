@@ -98,20 +98,22 @@ namespace BouncyCoins
 	{
 		public static CoinPlayer GetModPlayer(Player player) => player.GetModPlayer<CoinPlayer>(BouncyCoins.instance);
 
-		// returns: anim texture, rotation, frameheight
-		public delegate KeyFrameActionTuple keyFrameActionDelegate(Item item, int whoAmI);
+		public delegate KeyFrameActionResult keyFrameActionDelegate(Item item, int whoAmI);
 
 		internal static keyFrameActionDelegate coinKeyFrameAction => GenerateBasicKeyFrameActionDelegate(1, 5, 7);
 
-		public class KeyFrameActionTuple : Tuple<Texture2D, float, int>
+		public class KeyFrameActionResult
 		{
-			public KeyFrameActionTuple(Texture2D text, float rot, int height) : base(text, rot, height)
+			public KeyFrameActionResult(Texture2D text, float rot, int height)
 			{
+				AnimationTexture = text;
+				Rotation = rot;
+				FrameHeight = height;
 			}
 
-			public Texture2D AnimationTexture { get { return this.Item1; } }
-			public float Rotation { get { return this.Item2; } }
-			public int FrameHeight { get { return this.Item3; } }
+			public Texture2D AnimationTexture { get; protected set; }
+			public float Rotation { get; protected set; }
+			public int FrameHeight { get; protected set; }
 		}
 		/// <summary>
 		/// Will generate a basic keyframeaction delegate for you, but if it's not a vanilla coin the offset returned will be 0.
@@ -135,8 +137,8 @@ namespace BouncyCoins
 					Main.itemFrame[whoAmI] = 0;
 				}
 				return CoinItem.IsVanillaCoin(item.type) 
-				? new KeyFrameActionTuple(Main.coinTexture[item.type - 71], item.velocity.X* 0.2f, Main.coinTexture[item.type - 71].Height / maxFrames)
-				: new KeyFrameActionTuple(Main.itemTexture[item.type], 0f, Main.itemTexture[item.type].Height / maxFrames);
+				? new KeyFrameActionResult(Main.coinTexture[item.type - 71], item.velocity.X* 0.2f, Main.coinTexture[item.type - 71].Height / maxFrames)
+				: new KeyFrameActionResult(Main.itemTexture[item.type], 0f, Main.itemTexture[item.type].Height / maxFrames);
 			};
 		}
 
