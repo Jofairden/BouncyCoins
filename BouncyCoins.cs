@@ -100,7 +100,7 @@ namespace BouncyCoins
 
 		public delegate KeyFrameActionResult keyFrameActionDelegate(Item item, int whoAmI);
 
-		internal static keyFrameActionDelegate coinKeyFrameAction => GenerateBasicKeyFrameActionDelegate(1, 5, 7);
+		internal static keyFrameActionDelegate coinKeyFrameAction => GenerateBasicKeyFrameActionDelegate(1, 5, 8);
 
 		public class KeyFrameActionResult
 		{
@@ -120,7 +120,7 @@ namespace BouncyCoins
 		/// </summary>
 		/// <param name="frameIncrement">How fast the itemFrameCounter increments</param>
 		/// <param name="maxFrameCount">The amount of frames itemFrameCounter will count to</param>
-		/// <param name="maxFrames">The maximum amount of frames, this starts from 0! If you have 8 total frames, pass 7</param>
+		/// <param name="maxFrames">The maximum amount of frames</param>
 		/// <returns></returns>
 		public static keyFrameActionDelegate GenerateBasicKeyFrameActionDelegate(int frameIncrement, int maxFrameCount, int maxFrames)
 		{
@@ -130,11 +130,7 @@ namespace BouncyCoins
 				if (Main.itemFrameCounter[whoAmI] > maxFrameCount)
 				{
 					Main.itemFrameCounter[whoAmI] = 0;
-					Main.itemFrame[whoAmI] += 1;
-				}
-				if (Main.itemFrame[whoAmI] > maxFrames)
-				{
-					Main.itemFrame[whoAmI] = 0;
+					Main.itemFrame[whoAmI] = (Main.itemFrame[whoAmI] + 1) % maxFrames;
 				}
 				return CoinItem.IsVanillaCoin(item.type) 
 				? new KeyFrameActionResult(Main.coinTexture[item.type - 71], item.velocity.X* 0.2f, Main.coinTexture[item.type - 71].Height / maxFrames)
