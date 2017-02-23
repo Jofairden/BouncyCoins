@@ -51,6 +51,7 @@ namespace BouncyCoins
 				|| item.velocity.Length() > 0f)
 				return true;
 
+			// todo: support other anim textures
 			Texture2D texture = Main.itemTexture[item.type];
 			Texture2D animTexture = Main.coinTexture[item.type - 71];
 			rotation = item.velocity.X * 0.2f;
@@ -58,7 +59,7 @@ namespace BouncyCoins
 			float offsetX = item.width * 0.5f - texture.Width * 0.5f;
 			int frameHeight = animTexture.Height / 8;
 			int angle = player.bounceEvenly ? (int)Main.time : whoAmI % 60 + item.spawnTime;
-			angle += (int)player.universalOffset;
+			//angle += (int)player.universalOffset;
 
 			if (player.keyFrameActions.ContainsKey(item.type) && player.keyFrameActions[item.type] != null)
 				player.keyFrameActions[item.type].Invoke(whoAmI);
@@ -72,9 +73,10 @@ namespace BouncyCoins
 					frameHeight
 				));
 
+			var math_offset = player.amplitude * (float)Math.Cos(angle * player.speed);
 			Vector2 center = new Vector2(0f, frameHeight * 0.5f);
 
-			Vector2 offset = new Vector2(0f, player.amplitude * (float)Math.Cos(angle * player.speed));
+			Vector2 offset = new Vector2(0f, math_offset - player.amplitude + player.universalOffset);
 
 			Vector2 pos = new Vector2(item.position.X - Main.screenPosition.X + animTexture.Width * 0.5f + offsetX,
 							item.position.Y - Main.screenPosition.Y + frameHeight * 0.5f + offsetY)
@@ -126,20 +128,31 @@ namespace BouncyCoins
 			return keyFrameActions.Remove(type) && b;
 		}
 
-		internal bool bounceEvenly = false;
-		internal bool disallowModItems = false;
-		internal List<int> bouncyItems = new List<int>(new int[]
+		internal bool bounceEvenly;
+		internal bool disallowModItems;
+		internal List<int> bouncyItems;
+		internal float amplitude; // amp of bounce
+		internal float speed; // total speed of bounce
+		internal float universalOffset; // some offset added to angle
+		internal Dictionary<int, keyFrameActionDelegate> keyFrameActions;
+
+		public override void Initialize()
 		{
-			71,
-			72,
-			73,
-			74
+			bounceEvenly = false;
+			disallowModItems = false;
+			bouncyItems = new List<int>(new int[]
+			{
+				71,
+				72,
+				73,
+				74
+			}
+			);
+			amplitude = 5f;
+			speed = 0.05f;
+			universalOffset = 0f;
+			keyFrameActions = new Dictionary<int, keyFrameActionDelegate>();
 		}
-		);
-		internal float amplitude = 5f; // amp of bounce
-		internal float speed = 0.05f; // total speed of bounce
-		internal float universalOffset = 0f; // some offset added to angle
-		internal Dictionary<int, keyFrameActionDelegate> keyFrameActions = new Dictionary<int, keyFrameActionDelegate>();
 
 		public override TagCompound Save()
 		{
@@ -147,7 +160,7 @@ namespace BouncyCoins
 			{
 				["bounceEvenly"] = bounceEvenly,
 				["disallowModItems"] = disallowModItems,
-				["bouncyItems"] = bouncyItems,
+				["bouncyItems"] = new List<int>(bouncyItems),
 				["amplitude"] = amplitude,
 				["speed"] = speed,
 				["universalOffset"] = universalOffset
@@ -158,7 +171,7 @@ namespace BouncyCoins
 		{
 			bounceEvenly = tag.GetBool("bounceEvenly");
 			disallowModItems = tag.GetBool("disallowModItems");
-			bouncyItems = tag.GetList<int>("bouncyItems").ToList<int>();
+			bouncyItems = new List<int>(tag.GetList<int>("bouncyItems"));
 			amplitude = tag.GetFloat("amplitude");
 			speed = tag.GetFloat("speed");
 			universalOffset = tag.GetFloat("universalOffset");
