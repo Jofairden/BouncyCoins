@@ -16,6 +16,10 @@ namespace BouncyCoins
 		// (c) gorateron/jofairden
 		// version 0.1.2.2
 
+		public static int[] VanillaCoinSet =
+		{
+			71,72,73,74
+		};
 		public static BouncyCoins instance { get; protected set; }
 
 		public BouncyCoins()
@@ -41,6 +45,9 @@ namespace BouncyCoins
 
 	public class CoinItem : GlobalItem
 	{
+		internal static bool IsVanillaCoin(int type)
+			=> BouncyCoins.VanillaCoinSet.Any(x => x == type);
+
 		// Bouncy coins <3
 		public override bool PreDrawInWorld(Item item, SpriteBatch spriteBatch, Color lightColor, Color alphaColor, ref float rotation, ref float scale, int whoAmI)
 		{
@@ -51,19 +58,18 @@ namespace BouncyCoins
 				|| item.velocity.Length() > 0f)
 				return true;
 
-			// todo: support other anim textures
 			Texture2D texture = Main.itemTexture[item.type];
-			Texture2D animTexture = Main.coinTexture[item.type - 71];
-			rotation = item.velocity.X * 0.2f;
+			var keyFrame = (player.keyFrameActions.ContainsKey(item.type) && player.keyFrameActions[item.type] != null)
+				? player.keyFrameActions[item.type].Invoke(item, whoAmI)
+				: CoinPlayer.coinKeyFrameAction(item, whoAmI);
+
+			Texture2D animTexture = keyFrame.AnimationTexture;
+			rotation = keyFrame.Rotation;
 			float offsetY = item.height - texture.Height;
 			float offsetX = item.width * 0.5f - texture.Width * 0.5f;
-			int frameHeight = animTexture.Height / 8;
+			int frameHeight = keyFrame.FrameHeight;
 			int angle = player.bounceEvenly ? (int)Main.time : whoAmI % 60 + item.spawnTime;
 			//angle += (int)player.universalOffset;
-
-			if (player.keyFrameActions.ContainsKey(item.type) && player.keyFrameActions[item.type] != null)
-				player.keyFrameActions[item.type].Invoke(whoAmI);
-			else player.coinKeyFrameAction(whoAmI);
 
 			Rectangle? frameRect = new Rectangle?(
 				new Rectangle(
@@ -75,7 +81,6 @@ namespace BouncyCoins
 
 			var math_offset = player.amplitude * (float)Math.Cos(angle * player.speed);
 			Vector2 center = new Vector2(0f, frameHeight * 0.5f);
-
 			Vector2 offset = new Vector2(0f, math_offset - player.amplitude + player.universalOffset);
 
 			Vector2 pos = new Vector2(item.position.X - Main.screenPosition.X + animTexture.Width * 0.5f + offsetX,
@@ -93,13 +98,31 @@ namespace BouncyCoins
 	{
 		public static CoinPlayer GetModPlayer(Player player) => player.GetModPlayer<CoinPlayer>(BouncyCoins.instance);
 
-		public delegate void keyFrameActionDelegate(int whoAmI);
+		// returns: anim texture, rotation, frameheight
+		public delegate KeyFrameActionTuple keyFrameActionDelegate(Item item, int whoAmI);
 
-		public keyFrameActionDelegate coinKeyFrameAction => GenerateBasicKeyFrameActionDelegate(1, 5, 7);
+		internal static keyFrameActionDelegate coinKeyFrameAction => GenerateBasicKeyFrameActionDelegate(1, 5, 7);
 
-		public keyFrameActionDelegate GenerateBasicKeyFrameActionDelegate(int frameIncrement, int maxFrameCount, int maxFrames)
+		public class KeyFrameActionTuple : Tuple<Texture2D, float, int>
 		{
-			return delegate (int whoAmI)
+			public KeyFrameActionTuple(Texture2D text, float rot, int height) : base(text, rot, height)
+			{
+			}
+
+			public Texture2D AnimationTexture { get { return this.Item1; } }
+			public float Rotation { get { return this.Item2; } }
+			public int FrameHeight { get { return this.Item3; } }
+		}
+		/// <summary>
+		/// Will generate a basic keyframeaction delegate for you, but if it's not a vanilla coin the offset returned will be 0.
+		/// </summary>
+		/// <param name="frameIncrement">How fast the itemFrameCounter increments</param>
+		/// <param name="maxFrameCount">The amount of frames itemFrameCounter will count to</param>
+		/// <param name="maxFrames">The maximum amount of frames, this starts from 0! If you have 8 total frames, pass 7</param>
+		/// <returns></returns>
+		public static keyFrameActionDelegate GenerateBasicKeyFrameActionDelegate(int frameIncrement, int maxFrameCount, int maxFrames)
+		{
+			return delegate (Item item, int whoAmI)
 			{
 				Main.itemFrameCounter[whoAmI] += frameIncrement;
 				if (Main.itemFrameCounter[whoAmI] > maxFrameCount)
@@ -111,6 +134,9 @@ namespace BouncyCoins
 				{
 					Main.itemFrame[whoAmI] = 0;
 				}
+				return CoinItem.IsVanillaCoin(item.type) 
+				? new KeyFrameActionTuple(Main.coinTexture[item.type - 71], item.velocity.X* 0.2f, Main.coinTexture[item.type - 71].Height / maxFrames)
+				: new KeyFrameActionTuple(Main.itemTexture[item.type], 0f, Main.itemTexture[item.type].Height / maxFrames);
 			};
 		}
 
@@ -128,26 +154,19 @@ namespace BouncyCoins
 			return keyFrameActions.Remove(type) && b;
 		}
 
-		internal bool bounceEvenly;
-		internal bool disallowModItems;
-		internal List<int> bouncyItems;
+		internal bool bounceEvenly; // bounce evenly?
+		internal bool disallowModItems; // do not bounce moditems?
+		internal List<int> bouncyItems; // list of items that will bounce
 		internal float amplitude; // amp of bounce
 		internal float speed; // total speed of bounce
 		internal float universalOffset; // some offset added to angle
-		internal Dictionary<int, keyFrameActionDelegate> keyFrameActions;
+		internal Dictionary<int, keyFrameActionDelegate> keyFrameActions; // keyframing
 
 		public override void Initialize()
 		{
 			bounceEvenly = false;
 			disallowModItems = false;
-			bouncyItems = new List<int>(new int[]
-			{
-				71,
-				72,
-				73,
-				74
-			}
-			);
+			bouncyItems = new List<int>(BouncyCoins.VanillaCoinSet);
 			amplitude = 5f;
 			speed = 0.05f;
 			universalOffset = 0f;
