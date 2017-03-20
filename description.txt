@@ -1,9 +1,6 @@
 Fast Start starts newly created characters with some gifts! You will be granted better than copper tools, weapons, gear and more!
-All items granted are pre-HM and they don't go higher than platinum tier, as well as being selected randomly.
+Items given are randomly selected.
 
 It's programmed as follows: if you receive a platinum pickaxe, you can no longer get a platinum tier axe and hammer. If you then get the next highest tier axe, which is gold, you can no longer get platinum and gold tier hammer! This works the same for any other items so get, with some exceptions. If you're lucky, you'll get both life AND mana crystals!
 
 Can also grant things such as: slime staff, money trough, grappling hook and more!
-
-Current version: 0.2
-Reable by tModReader

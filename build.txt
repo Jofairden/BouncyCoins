@@ -1,7 +1,7 @@
-author = gorateron
-version = 0.2
+author = jofairden
+version = 0.4
 displayName = Fast Start
-homepage = http://forums.terraria.org/index.php?threads/fast-start.45055
+homepage = http://forums.terraria.org/index.php?threads/.45055
 hideCode = false
 hideResources = false
 includeSource = true
