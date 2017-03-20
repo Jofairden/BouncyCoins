@@ -1,4 +1,6 @@
 # BouncyCoins
+![](https://travis-ci.org/Jofairden/BouncyCoins.svg "")
+
 A mod for Terraria that makes coins bounce.
 
 ![version 0.1.2 and up](https://cdn.discordapp.com/attachments/103110554649894912/236164979936591872/unevenbounce_nearperfect.gif "version 0.1.2 and up")
