@@ -15,9 +15,13 @@ namespace TheDeconstructor
 {
 	public static class Utils
 	{
+		public static Color DiscoColor() =>
+			new Color(Main.DiscoR, Main.DiscoG, Main.DiscoB);
+
 		public static Color GetTooltipColor(this Item item)
 		{
 			if (item.questItem) return Colors.RarityAmber;
+			if (item.expert || item.type == TheDeconstructor.instance.ItemType<Items.Deconstructor>()) return DiscoColor();
 			switch (item.rare)
 			{
 				default:
@@ -31,7 +35,7 @@ namespace TheDeconstructor
 					return Colors.RarityGreen;
 				case 3:
 					return Colors.RarityOrange;
-				case 4:
+				case 4: //todo: find real color
 					return Colors.RarityRed * 0.75f;
 				case 5:
 					return Colors.RarityPink;

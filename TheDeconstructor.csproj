@@ -62,14 +62,23 @@
     <Compile Include="DeconGlobalItem.cs" />
     <Compile Include="DeconstructBagItem.cs" />
     <Compile Include="DeconstructorGUI.cs" />
+    <Compile Include="Items\Deconstructor.cs" />
     <Compile Include="ItemValue.cs" />
+    <Compile Include="Sounds\Custom\DeconSounds.cs" />
     <Compile Include="TheDeconstructor.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Tiles\Deconstructor.cs" />
     <Compile Include="Utils.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="build.txt" />
     <Content Include="description.txt" />
+    <Content Include="Sounds\Custom\CloseUI.wav" />
+    <Content Include="Sounds\Custom\Decline.wav" />
+    <Content Include="Sounds\Custom\Notif.wav" />
+    <Content Include="Sounds\Custom\OpenUI.wav" />
+    <Content Include="Sounds\Custom\Receive.wav" />
+    <Content Include="Sounds\Custom\Redeem.wav" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

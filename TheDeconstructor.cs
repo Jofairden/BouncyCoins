@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Xna.Framework;
 using Terraria;
 using Terraria.DataStructures;
 using Terraria.GameInput;
@@ -11,25 +12,58 @@ using Terraria.UI;
 
 namespace TheDeconstructor
 {
+	internal class DeconPlayer : ModPlayer
+	{
+		public Vector2 DeconDist = Vector2.Zero;
+	}
+
+	internal static class SoundHelper
+	{
+		internal static string[] Sounds =
+		{
+			"CloseUI",
+			"Decline",
+			"Notif",
+			"OpenUI",
+			"Receive",
+			"Redeem"
+		};
+
+		internal enum SoundType
+		{
+			CloseUI,
+			Decline,
+			Notif,
+			OpenUI,
+			Receive,
+			Redeem
+		}
+
+		internal static void PlaySound(SoundType type)
+		{
+			Main.PlaySound(SoundLoader.customSoundType, -1, -1,
+				TheDeconstructor.instance.GetSoundSlot(Terraria.ModLoader.SoundType.Custom, "Sounds/Custom/" + Sounds[(int)type]));
+		}
+	}
+
 	public class TheDeconstructor : Mod
 	{
 		internal UserInterface deconUI;
 		internal DeconstructorGUI deconGUI;
 		internal static TheDeconstructor instance;
-		internal static ModHotKey deconHotkey;
 
 		public TheDeconstructor()
 		{
 			Properties = new ModProperties()
 			{
 				Autoload = true,
+				AutoloadSounds = true
 			};
 		}
 
 		public override void Load()
 		{
 			instance = this as TheDeconstructor;
-			deconHotkey = RegisterHotKey("Toggle Deconstructor UI", "U");
 
 			if (Main.dedServ) return;
 
@@ -59,37 +93,6 @@ namespace TheDeconstructor
 
 			insertLayer = layers.FindIndex(layer => layer.Name.Equals("Vanilla: Interact Item Icon"));
 			layers[insertLayer].Skip = insertLayer != -1 && deconGUI.IsMouseHovering;
-		}
-
-		internal class DeconPlayer : ModPlayer
-		{
-			public override void ProcessTriggers(TriggersSet triggersSet)
-			{
-				if (!deconHotkey.JustPressed) return;
-
-				if (!instance.deconGUI.visible)
-				{
-					instance.deconGUI.Update(Main._drawInterfaceGameTime);
-				}
-				instance.deconGUI.visible = !instance.deconGUI.visible;
-				instance.deconGUI.ToggleUI();
-			}
-		}
-	}
-
-
-	/// <summary>
-	///  fuck you bitch
-	///  (c) gorateron 2017
-	///  made in 1 day
-	///  suck it
-	///  boii
-	/// </summary>
-	internal static class ModHelper
-	{
-		public static void Invert(this bool bl)
-		{
-			bl = !bl;
 		}
 	}
 }

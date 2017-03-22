@@ -13,7 +13,7 @@ using Terraria.UI;
 
 namespace TheDeconstructor
 {
-	public class DeconstructorGUI : UIState
+	internal class DeconstructorGUI : UIState
 	{
 		internal bool visible = false;
 		internal bool dragging = false;
@@ -78,7 +78,12 @@ namespace TheDeconstructor
 			basePanel.Append(baseTitle);
 
 			closeButton = new UIImageButton(TheDeconstructor.instance.GetTexture("closeButton"));
-			closeButton.OnClick += (s, e) => { visible = false; };
+			closeButton.OnClick += (s, e) => 
+			{
+				SoundHelper.PlaySound(SoundHelper.SoundType.CloseUI);
+				visible = false;
+				ToggleUI(true);
+			};
 			closeButton.Width.Set(20f, 0f);
 			closeButton.Height.Set(20f, 0f);
 			closeButton.Left.Set(basePanel.Width.Pixels - closeButton.Width.Pixels * 2f - vpadding * 4f, 0f);
@@ -178,7 +183,8 @@ namespace TheDeconstructor
 		{
 			if (!deconItemPanel.item.IsAir && (!visible || force))
 			{
-				Main.LocalPlayer.GetItem(Main.myPlayer, deconItemPanel.item.Clone()); // does not seem to generate item text
+				//Main.LocalPlayer.GetItem(Main.myPlayer, deconItemPanel.item.Clone()); // does not seem to generate item text
+				Main.LocalPlayer.QuickSpawnItem(deconItemPanel.item.type, deconItemPanel.item.stack);
 				deconItemPanel.item.SetDefaults(0);
 				recipeList.Clear();
 			}
@@ -188,9 +194,13 @@ namespace TheDeconstructor
 		{
 			base.Update(gameTime);
 
+			var info = Main.LocalPlayer.GetModPlayer<DeconPlayer>(TheDeconstructor.instance);
+
 			// :s which bools do I need??
-			if (Main.inputTextEscape || Main.LocalPlayer.dead || Main.gameMenu)
+			if (Math.Abs(info.DeconDist.X) > 12f * 16f || Math.Abs(info.DeconDist.Y) > 12f * 16f
+				|| Main.inputTextEscape || Main.LocalPlayer.dead || Main.gameMenu)
 			{
+				SoundHelper.PlaySound(SoundHelper.SoundType.CloseUI);
 				visible = false;
 				ToggleUI(true);
 			}
@@ -289,11 +299,13 @@ namespace TheDeconstructor
 						// Tries to 'buy'
 						if (!Main.LocalPlayer.BuyItemOld(recipePanel.deconstructValue.RawValue))
 						{
+							SoundHelper.PlaySound(SoundHelper.SoundType.Decline);
 							recipePanel.errorTime = 550f;
 							recipePanel.errorText.SetText("You do not have enough gold!");
 							return;
 						}
 
+						SoundHelper.PlaySound(SoundHelper.SoundType.Receive);
 						// Remove stacks from panel item based on recipe cost
 						var stack = guiInst.deconItemPanel.item.stack;
 						var stackDiff = (float)stack / (float)recipePanel.embeddedRecipe.createItem.stack;

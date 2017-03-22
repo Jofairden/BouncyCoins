@@ -1,7 +1,7 @@
-﻿author = gorateron
+﻿author = jofairden
 version = 0.1
-displayName = The Deconstructor Mod
-homepage = 
+displayName = The Deconstructor
+homepage = https://forums.terraria.org/index.php?threads/the-deconstructor.55904/
 hideCode = true
 hideResources = true
 includeSource = false

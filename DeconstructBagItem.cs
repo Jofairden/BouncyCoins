@@ -11,7 +11,7 @@ using Terraria.ModLoader.IO;
 
 namespace TheDeconstructor
 {
-	public class DeconstructBagItem : ModItem
+	internal class DeconstructBagItem : ModItem
 	{
 		public Item sourceItem = new Item();
 		public List<Item> bagItems = new List<Item>();
@@ -72,7 +72,7 @@ namespace TheDeconstructor
 				if (bagItems != null && bagItems.Count >= 1)
 				{
 					// Need to figure out a way how to reset weapon prefixes
-
+					SoundHelper.PlaySound(SoundHelper.SoundType.Redeem);
 					//Item giveItem = new Item();
 					foreach (var infoBagItem in bagItems)
 					{
@@ -129,7 +129,7 @@ namespace TheDeconstructor
 			if (sourceItem != null && sourceItem.type != 0)
 			{
 				tooltips.Add(new TooltipLine(mod, $"{mod.Name}: GoodieBag: Source",
-						$"Source: [i/s1:{sourceItem.type}][c/{sourceItem.GetTooltipColor().ToHexString().Substring(1)}:{sourceItem.name} ](x{sourceItem.stack})"));
+						$"Source:[i/s1:{sourceItem.type}][c/{sourceItem.GetTooltipColor().ToHexString().Substring(1)}:{sourceItem.name} ](x{sourceItem.stack})"));
 			}
 			tooltips.Add(new TooltipLine(mod, $"{mod.Name}: GoodieBag: Title", "Open this bag and receive:"));
 			foreach (var infoBagItem in bagItems)
@@ -167,10 +167,4 @@ namespace TheDeconstructor
 
 		public static string ToRgbString(this Color c) => $"RGB({c.R}, {c.G}, {c.B})";
 	}
-
-	///  fuck you bitch
-	///  (c) gorateron 2017
-	///  made in 1 day
-	///  suck it
-	///  boii
 }

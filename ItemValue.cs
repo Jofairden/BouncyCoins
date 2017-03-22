@@ -10,7 +10,6 @@ using Terraria.ID;
 
 namespace TheDeconstructor
 {
-	// Fucking lifesaver
 	public struct ItemValue
 	{
 		public int RawValue { get; private set; }
@@ -33,7 +32,7 @@ namespace TheDeconstructor
 				stringBuilder.Append($"{Copper}c");
 
 			if (stringBuilder.Length <= 0)
-				return "No value";
+				return " [No value]";
 
 			return string.Concat(stringBuilder.ToString().Select(c => $"{c}" + (char.IsLetter(c) ? " " : ""))).TrimEnd(' ');
 		}
@@ -52,7 +51,7 @@ namespace TheDeconstructor
 				stringBuilder.Append($"[i/s1:{ItemID.CopperCoin}]{Copper}");
 
 			if (stringBuilder.Length <= 0)
-				return "No value";
+				return " [No value]";
 
 			return $"{stringBuilder}";
 		}

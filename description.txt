@@ -1,1 +1,11 @@
-﻿If this mod is published on the mod browser, please report to gorateron/jopojelly.
+﻿Adds a special animated tile to the game which opens a custom UI on right click.
+Players can put any item into the slot and view all recipes available for the item.
+The item can then be magically deconstructed, for a price.
+
+Station is crafted with:
+-10 of each lunar fragment (solar, vortex, nebula, stardust)
+-10 lunar bars
+At the Ancient Manipulator
+
+There's a failure rate in place when deconstructing potions (chance to lose some materials when opening goodie bag)
+Mod comes with fitting sound effects.
