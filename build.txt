@@ -1,10 +1,10 @@
 ﻿author = jofairden
-version = 0.1.1
+version = 0.2
 displayName = The Deconstructor
-homepage = https://forums.terraria.org/index.php?threads/the-deconstructor.55904/
+homepage = https://forums.terraria.org/index.php?threads/.55904/
 hideCode = true
 hideResources = true
 includeSource = false
-buildIgnore = *.csproj, *.user, obj\*, bin\*, .vs\*, Media\*, *\*.psd, .git\*, *.sln, *.csproj, Properties\*, README.md, LICENSE, .gitignore
+buildIgnore = *.csproj, *.user, obj\*, bin\*, .vs\*, Media\*, *\*.psd, .git\*, *.sln, *.csproj, Properties\*, README.md, LICENSE, .gitignore, .travis.yml
 includePDB = true
 languageVersion = 6

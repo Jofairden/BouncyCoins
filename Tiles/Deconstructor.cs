@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Microsoft.Xna.Framework;
 using Terraria;
 using Terraria.DataStructures;
@@ -11,10 +7,9 @@ using Terraria.ID;
 using Terraria.ModLoader;
 using Terraria.ObjectData;
 
-
 namespace TheDeconstructor.Tiles
 {
-	internal class DeconstructorTE : ModTileEntity
+	internal sealed class DeconstructorTE : ModTileEntity
 	{
 		public override bool ValidTile(int i, int j)
 		{
@@ -46,7 +41,7 @@ namespace TheDeconstructor.Tiles
 	}
 
 
-	internal class Deconstructor : ModTile
+	internal sealed class Deconstructor : ModTile
 	{
 		public override void SetDefaults()
 		{

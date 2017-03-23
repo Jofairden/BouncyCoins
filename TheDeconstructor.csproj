@@ -60,9 +60,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DeconGlobalItem.cs" />
-    <Compile Include="DeconstructBagItem.cs" />
+    <Compile Include="Items\Cube.cs" />
+    <Compile Include="Items\LunarCube.cs" />
     <Compile Include="DeconstructorGUI.cs" />
     <Compile Include="Items\Deconstructor.cs" />
+    <Compile Include="Items\QueerLunarCube.cs" />
     <Compile Include="ItemValue.cs" />
     <Compile Include="Sounds\Custom\DeconSounds.cs" />
     <Compile Include="TheDeconstructor.cs" />
@@ -73,6 +75,11 @@
   <ItemGroup>
     <Content Include="build.txt" />
     <Content Include="description.txt" />
+    <Content Include="Items\Deconstructor.png" />
+    <Content Include="Items\LunarCube.png" />
+    <Content Include="Items\LunarCubeFrames.png" />
+    <Content Include="Items\QueerLunarCube.png" />
+    <Content Include="Items\QueerLunarCubeFrames.png" />
     <Content Include="Sounds\Custom\CloseUI.wav" />
     <Content Include="Sounds\Custom\Decline.wav" />
     <Content Include="Sounds\Custom\Notif.wav" />

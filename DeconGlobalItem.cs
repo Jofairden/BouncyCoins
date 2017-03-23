@@ -1,15 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 using Terraria;
 using Terraria.ModLoader;
 
-
 namespace TheDeconstructor
 {
-	class DeconGlobalItem : GlobalItem
+	internal class DeconGlobalItem : GlobalItem
 	{
 		public override void ModifyTooltips(Item item, List<TooltipLine> tooltips)
 		{
@@ -24,15 +19,14 @@ namespace TheDeconstructor
 		}
 	}
 
-	public class DeconItemInfo : ItemInfo
+    internal class DeconItemInfo : ItemInfo
 	{
 		public bool addValueTooltip = false;
 
 		public override ItemInfo Clone()
 		{
-			var clone = new DeconItemInfo();
-			clone.addValueTooltip = this.addValueTooltip;
-			return clone;
+		    var clone = new DeconItemInfo {addValueTooltip = this.addValueTooltip};
+		    return clone;
 		}
 	}
 }
