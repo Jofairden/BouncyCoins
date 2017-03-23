@@ -11,20 +11,18 @@ namespace TheDeconstructor.Items
 		{
             base.SetDefaults();
             item.name = "Lunar Cube";
-            item.toolTip = "Right click to break seal";
             item.width = 20;
 			item.height = 28;
 			item.rare = 9;
-            State = CubeState.Open;
 		}
 
         public override ModItem Clone() 
             => CubeClone<LunarCube>() as ModItem;
 
-        public override string TexturePath =>
+        internal override string TexturePath =>
             "Items/LunarCubeFrames";
 
-        public override int InvFMax =>
+        internal override int InvFMax =>
             7;
     }
 }

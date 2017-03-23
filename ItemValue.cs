@@ -17,7 +17,7 @@ namespace TheDeconstructor
 
 		public override string ToString()
 		{
-			StringBuilder stringBuilder = new StringBuilder();
+			var stringBuilder = new StringBuilder();
 
 			if (Platinum > 0)
 				stringBuilder.Append($"{Platinum}p");
@@ -36,7 +36,7 @@ namespace TheDeconstructor
 
 		public string ToTagString()
 		{
-			StringBuilder stringBuilder = new StringBuilder();
+			var stringBuilder = new StringBuilder();
 
 			if (Platinum > 0)
 				stringBuilder.Append($"[i/s1:{ItemID.PlatinumCoin}]{Platinum}");

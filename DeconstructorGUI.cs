@@ -26,7 +26,8 @@ namespace TheDeconstructor
         internal UIPanel basePanel;
         internal UIText baseTitle;
         internal UIImageButton closeButton;
-        internal UIItemPanel deconItemPanel;
+        internal UIItemCubePanel cubeItemPanel;
+        internal UIItemSourcePanel sourceItemPanel;
         internal UIRecipeList recipeList;
         internal UIScrollbar recipeScrollbar;
 
@@ -34,7 +35,7 @@ namespace TheDeconstructor
         internal static List<short> failureTypes; // used for checking costs
         internal static string hoverString; // used for hovering stuff
 
-        public DeconstructorGUI()
+        internal DeconstructorGUI()
         {
             base.SetPadding(vpadding);
             base.Width.Set(vwidth, 0f);
@@ -51,7 +52,9 @@ namespace TheDeconstructor
             ItemID itemIDInst = new ItemID();
             failureTypes = typeof(ItemID)
                 .GetFields()
-                .Where(field => field.Name.ToUpper().Contains("POTION"))
+                .Where(field =>
+                field.Name.ToUpper().Contains("POTION")
+                || (field.Name != "ToxicFlask" && field.Name.ToUpper().Contains("FLASK")))
                 .Select(field => (short)field.GetValue(itemIDInst))
                 .ToList();
             failureTypes.AddRange(new short[]
@@ -81,9 +84,7 @@ namespace TheDeconstructor
             closeButton = new UIImageButton(TheDeconstructor.instance.GetTexture("closeButton"));
             closeButton.OnClick += (s, e) =>
             {
-                SoundHelper.PlaySound(SoundHelper.SoundType.CloseUI);
-                visible = false;
-                ToggleUI(true);
+                TheDeconstructor.instance.TryToggleGUI();
             };
             closeButton.Width.Set(20f, 0f);
             closeButton.Height.Set(20f, 0f);
@@ -91,64 +92,19 @@ namespace TheDeconstructor
             closeButton.Top.Set(closeButton.Height.Pixels / 2f, 0f);
             basePanel.Append(closeButton);
 
-            deconItemPanel = new UIItemPanel();
-            deconItemPanel.OnClick += (s, e) =>
-            {
-                try
-                {
-                    if (Main.mouseItem?.type == TheDeconstructor.instance.ItemType<LunarCube>())
-                        return; // prevents item info breaking when using rmb when bag is in slot
+            cubeItemPanel = new UIItemCubePanel();
+            cubeItemPanel.Top.Set(cubeItemPanel.Height.Pixels / 2f + vpadding / 2f, 0f);
+            basePanel.Append(cubeItemPanel);
 
-                    var panel = (e as UIItemPanel);
-                    Main.playerInventory = true;
-                    if (panel.item.type != 0 && Main.mouseItem.type != 0)
-                    {
-                        if (panel.item.type != Main.mouseItem.type)
-                        {
-                            var tempItem = Main.mouseItem.Clone();
-                            var tempItem2 = panel.item.Clone();
-                            panel.item = tempItem;
-                            Main.mouseItem = tempItem2;
-                        }
-                        else
-                        {
-                            if (panel.item.maxStack <= 1) return;
-                            panel.item.stack += Main.mouseItem.stack;
-                            Main.mouseItem.SetDefaults(0);
-                        }
-                    }
-                    else if (panel.item.type != 0)
-                    {
-                        Main.mouseItem = panel?.item.Clone();
-                        panel?.item.SetDefaults(0);
-                    }
-                    else if (Main.mouseItem != null)
-                    {
-                        panel.item = Main.mouseItem.Clone();
-                        Main.mouseItem.SetDefaults(0);
-                    }
-
-                    recipeList.Clear();
-
-                    if (panel.item.type == 0) return;
-                    currentRecipes = RecipeSearcher.FindRecipes(panel?.item);
-                    RecipeSearcher.FillWithRecipes(panel?.item, currentRecipes, recipeList,
-                        recipeScrollbar.Width.Pixels);
-                }
-                catch (Exception ex)
-                {
-                    Main.NewTextMultiline(ex.ToString());
-                }
-            };
-            deconItemPanel.Top.Set(deconItemPanel.Height.Pixels / 2f + vpadding / 2f, 0f);
-            basePanel.Append(deconItemPanel);
-
+            sourceItemPanel = new UIItemSourcePanel();
+            sourceItemPanel.Top.Set(cubeItemPanel.Top.Pixels + cubeItemPanel.Height.Pixels + vpadding / 2f, 0f);
+            basePanel.Append(sourceItemPanel);
 
             var recipeInnerPanel = new UIPanel();
-            recipeInnerPanel.Width.Set(basePanel.Width.Pixels - deconItemPanel.Width.Pixels * 2f - vpadding * 2f, 0f);
-            recipeInnerPanel.Height.Set(basePanel.Height.Pixels - deconItemPanel.Top.Pixels * 2f - vpadding * 3f, 0f);
-            recipeInnerPanel.Left.Set(deconItemPanel.Width.Pixels + vpadding / 2f, 0f);
-            recipeInnerPanel.Top.Set(deconItemPanel.Top.Pixels, 0f);
+            recipeInnerPanel.Width.Set(basePanel.Width.Pixels - cubeItemPanel.Width.Pixels * 2f - vpadding * 2f, 0f);
+            recipeInnerPanel.Height.Set(basePanel.Height.Pixels - cubeItemPanel.Top.Pixels * 2f - vpadding * 3f, 0f);
+            recipeInnerPanel.Left.Set(cubeItemPanel.Width.Pixels + vpadding / 2f, 0f);
+            recipeInnerPanel.Top.Set(cubeItemPanel.Top.Pixels, 0f);
             basePanel.Append(recipeInnerPanel);
 
             recipeList = new UIRecipeList(recipeInnerPanel.Width.Pixels, recipeInnerPanel.Height.Pixels);
@@ -189,11 +145,11 @@ namespace TheDeconstructor
 
         public void ToggleUI(bool force = false)
         {
-            if (!deconItemPanel.item.IsAir && (!visible || force))
+            if (!sourceItemPanel.item.IsAir && (!visible || force))
             {
-                //Main.LocalPlayer.GetItem(Main.myPlayer, deconItemPanel.item.Clone()); // does not seem to generate item text
-                Main.LocalPlayer.QuickSpawnItem(deconItemPanel.item.type, deconItemPanel.item.stack);
-                deconItemPanel.item.SetDefaults(0);
+                //Main.LocalPlayer.GetItem(Main.myPlayer, sourceItemPanel.item.Clone()); // does not seem to generate item text
+                Main.LocalPlayer.QuickSpawnItem(sourceItemPanel.item.type, sourceItemPanel.item.stack);
+                sourceItemPanel.item.TurnToAir();
                 recipeList.Clear();
             }
         }
@@ -201,15 +157,14 @@ namespace TheDeconstructor
         public override void Update(GameTime gameTime)
         {
             base.Update(gameTime);
-
             var info = Main.LocalPlayer.GetModPlayer<DeconPlayer>(TheDeconstructor.instance);
+
+            if (info.UsedQueerCube) return;
 
             if (Math.Abs(info.DeconDist.X) > 12f * 16f || Math.Abs(info.DeconDist.Y) > 12f * 16f
                 || Main.inputTextEscape || Main.LocalPlayer.dead || Main.gameMenu)
             {
-                SoundHelper.PlaySound(SoundHelper.SoundType.CloseUI);
-                visible = false;
-                ToggleUI(true);
+                TheDeconstructor.instance.TryToggleGUI();
             }
         }
 
@@ -251,7 +206,7 @@ namespace TheDeconstructor
                 base.Left.Set(left, 0f);
                 base.Top.Set(top, 0f);
 
-                recipeBag = new UIRecipeBag(TheDeconstructor.instance.GetTexture("DeconstructBagItem")) {Parent = this};
+                recipeBag = new UIRecipeBag(TheDeconstructor.instance.GetTexture("DeconstructBagItem")) { Parent = this };
                 recipeBag.Width.Set(30f, 0f);
                 recipeBag.Height.Set(40f, 0f);
                 recipeBag.Top.Set(lastPanel.Top.Pixels + recipeBag.Height.Pixels / 4f, 0f);
@@ -313,10 +268,10 @@ namespace TheDeconstructor
 
                         SoundHelper.PlaySound(SoundHelper.SoundType.Receive);
                         // Remove stacks from panel item based on recipe cost
-                        var stack = guiInst.deconItemPanel.item.stack;
+                        var stack = guiInst.sourceItemPanel.item.stack;
                         var stackDiff = (float)stack / (float)recipePanel.embeddedRecipe.createItem.stack;
                         stackDiff *= recipePanel.embeddedRecipe.createItem.stack;
-                        guiInst.deconItemPanel.item.stack -= (int)stackDiff;
+                        guiInst.sourceItemPanel.item.stack -= (int)stackDiff;
 
                         // Give the new bag item
                         Item bagItem = new Item();
@@ -324,15 +279,16 @@ namespace TheDeconstructor
                         recipePanel.materials.ForEach(x => items.Add(x.item));
                         LunarCube cube = bagItem.modItem as LunarCube;
                         cube.SealedItems = new List<Item>(items);
-                        cube.SealedSource = (Item)guiInst.deconItemPanel.item.Clone();
+                        cube.SealedSource = (Item)guiInst.sourceItemPanel.item.Clone();
                         cube.SealedSource.stack = (int)stackDiff;
                         cube.CanFail = recipePanel.canFail;
                         cube.State = Cube.CubeState.Sealed;
+                        cube.item.value = recipePanel.materialsValue.RawValue;
                         Main.LocalPlayer.GetItem(Main.myPlayer, bagItem);
 
                         // Reset item panel if needed
-                        if (guiInst.deconItemPanel.item.stack <= 0)
-                            guiInst.deconItemPanel.item.SetDefaults(0);
+                        if (guiInst.sourceItemPanel.item.stack <= 0)
+                            guiInst.sourceItemPanel.item.SetDefaults(0);
 
                         // Clear recipe list, reset dragging, otherwise UI starts draggin
                         guiInst.recipeList?.Clear();
@@ -355,6 +311,7 @@ namespace TheDeconstructor
             }
         }
 
+        // List holding recipe panels
         internal class UIRecipeList : UIList
         {
             public List<UIRecipePanel> recipes;
@@ -369,12 +326,183 @@ namespace TheDeconstructor
             }
         }
 
+        // Only takes cubes
+        internal sealed class UIItemCubePanel : UIInteractableItemPanel
+        {
+            public UIItemCubePanel(int type = 0, int stack = 0, bool allowsAll = false, IEnumerable<short> allowedItems =null) : base(type, stack, allowsAll, allowedItems)
+            {
+                this.allowsAll = false;
+                this.allowedItems = new short[]
+                {
+                    (short) TheDeconstructor.instance.ItemType<LunarCube>(),
+                    (short) TheDeconstructor.instance.ItemType<QueerLunarCube>()
+                }.ToList();
+            }
+        }
+
+        // Is source panel (item to deconstruct)
+        internal sealed class UIItemSourcePanel : UIInteractableItemPanel
+        {
+            public override void PostOnClick(UIMouseEvent evt, UIElement e)
+            {
+                DoUpdate();
+            }
+
+            public override void PostOnRightClick(UIMouseEvent evt, UIElement e)
+            {
+                DoUpdate();
+            }
+
+            private void DoUpdate()
+            {
+                TheDeconstructor.instance.deconGUI.recipeList.Clear();
+
+                if (item.IsAir) return;
+
+                currentRecipes = RecipeSearcher.FindRecipes(item);
+                RecipeSearcher.FillWithRecipes(item, currentRecipes,
+                    TheDeconstructor.instance.deconGUI.recipeList,
+                    TheDeconstructor.instance.deconGUI.recipeScrollbar.Width.Pixels);
+            }
+        }
+
+        // Allows user to put in / take out item
+        internal class UIInteractableItemPanel : UIItemPanel
+        {
+            public bool allowsAll;
+            public List<short> allowedItems;
+
+            public UIInteractableItemPanel(int type = 0, int stack = 0, bool allowsAll = true, IEnumerable<short> allowedItems = null) : base(type, stack)
+            {
+                displayOnly = false; // not just for display
+                base.OnClick += UIInteractableItemPanel_OnClick;
+                base.OnRightClick += UIInteractableItemPanel_OnRightClick;
+                this.allowsAll = allowsAll;
+                this.allowedItems = allowedItems?.ToList() ?? null;
+            }
+
+            public virtual void PostOnRightClick(UIMouseEvent evt, UIElement e) { }
+            public virtual void PostOnClick(UIMouseEvent evt, UIElement e) { }
+
+            private void UIInteractableItemPanel_OnRightClick(UIMouseEvent evt, UIElement e)
+            {
+                try
+                {
+                    if (displayOnly) return;
+                    if (!item.IsAir)
+                    {
+                        // Open inventory
+                        Main.playerInventory = true;
+
+                        // Handle stack splitting here
+                        if (Main.stackSplit <= 1 && item.type != 0 &&
+                            (Main.mouseItem.IsTheSameAs(item) || Main.mouseItem.type == 0))
+                        {
+                            int num2 = Main.superFastStack + 1;
+                            for (int j = 0; j < num2; j++)
+                            {
+                                if ((Main.mouseItem.stack < Main.mouseItem.maxStack || Main.mouseItem.type == 0) &&
+                                    item.stack > 0)
+                                {
+                                    if (j == 0)
+                                    {
+                                        Main.PlaySound(18, -1, -1, 1);
+                                    }
+                                    if (Main.mouseItem.type == 0)
+                                    {
+                                        Main.mouseItem.netDefaults(item.netID);
+                                        if (item.prefix != 0)
+                                        {
+                                            Main.mouseItem.Prefix((int) item.prefix);
+                                        }
+                                        Main.mouseItem.stack = 0;
+                                    }
+                                    Main.mouseItem.stack++;
+                                    item.stack--;
+                                    Main.stackSplit = Main.stackSplit == 0 ? 15 : Main.stackDelay;
+
+                                    if (item.stack <= 0)
+                                    {
+                                        TheDeconstructor.instance.deconGUI.recipeList.Clear();
+                                        item.SetDefaults(0);
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    PostOnRightClick(evt, e);
+                }
+                catch (Exception ex)
+                {
+                    Main.NewTextMultiline(ex.ToString());
+                }
+            }
+
+            private void UIInteractableItemPanel_OnClick(UIMouseEvent evt, UIElement e)
+            {
+                try
+                {
+                    if (displayOnly
+                        || (item.IsAir
+                             && !allowsAll
+                             && allowedItems != null
+                             && !allowedItems.Contains((short)Main.mouseItem.type)))
+                        return;
+
+                    var panel = (e as UIItemPanel);
+                    if (panel == null)
+                        return;
+
+                    Main.playerInventory = true;
+                    // Panel has item, cursor has item
+                    if (!panel.item.IsAir && !Main.mouseItem.IsAir)
+                    {
+                        // Attempt a swap
+                        if (panel.item.type != Main.mouseItem.type)
+                        {
+                            var tempItem = Main.mouseItem.Clone();
+                            var tempItem2 = panel.item.Clone();
+                            panel.item = tempItem;
+                            Main.mouseItem = tempItem2;
+                        }
+                        else
+                        // Attempt increment stack
+                        {
+                            if (panel.item.maxStack <= 1) return;
+                            panel.item.stack += Main.mouseItem.stack;
+                            Main.mouseItem.TurnToAir();
+                        }
+                    }
+                    // Panel has item
+                    else if (!panel.item.IsAir)
+                    {
+                        Main.mouseItem = panel.item.Clone();
+                        panel.item.TurnToAir();
+                    }
+                    // Mouse has item
+                    else if (!Main.mouseItem.IsAir)
+                    {
+                        panel.item = Main.mouseItem.Clone();
+                        Main.mouseItem.TurnToAir();
+                    }
+
+                    PostOnClick(evt, e);
+                }
+                catch (Exception ex)
+                {
+                    Main.NewTextMultiline(ex.ToString());
+                }
+            }
+        }
+
+        // Item panel which can display an item
         internal class UIItemPanel : UIPanel
         {
             internal const float panelwidth = 50f;
             internal const float panelheight = 50f;
             internal const float panelpadding = 0f;
-            private bool rightClicking = false;
+
             public Item item;
             public bool displayOnly;
 
@@ -386,65 +514,6 @@ namespace TheDeconstructor
                 item = new Item();
                 item.SetDefaults(type);
                 item.stack = stack;
-            }
-
-            public override void Update(GameTime gameTime)
-            {
-                if (displayOnly) return;
-
-                // Is right clicking?
-                rightClicking = Main.mouseRight && base.IsMouseHovering;
-
-                // If right clicking, and is a good item
-                if (rightClicking && item.type != 0)
-                {
-                    // Open inventory
-                    Main.playerInventory = true;
-
-                    // Handle stack splitting here
-                    if (Main.stackSplit <= 1 && item.type != 0 && (Main.mouseItem.IsTheSameAs(item) || Main.mouseItem.type == 0))
-                    {
-                        int num2 = Main.superFastStack + 1;
-                        for (int j = 0; j < num2; j++)
-                        {
-                            if ((Main.mouseItem.stack < Main.mouseItem.maxStack || Main.mouseItem.type == 0) && item.stack > 0)
-                            {
-                                if (j == 0)
-                                {
-                                    Main.PlaySound(18, -1, -1, 1);
-                                }
-                                if (Main.mouseItem.type == 0)
-                                {
-                                    Main.mouseItem.netDefaults(item.netID);
-                                    if (item.prefix != 0)
-                                    {
-                                        Main.mouseItem.Prefix((int)item.prefix);
-                                    }
-                                    Main.mouseItem.stack = 0;
-                                }
-                                Main.mouseItem.stack++;
-                                item.stack--;
-                                TheDeconstructor.instance.deconGUI.recipeList.Clear();
-                                RecipeSearcher.FillWithRecipes(item, currentRecipes,
-                                    TheDeconstructor.instance.deconGUI.recipeList, TheDeconstructor.instance.deconGUI.recipeScrollbar.Width.Pixels);
-                                if (Main.stackSplit == 0)
-                                {
-                                    Main.stackSplit = 15;
-                                }
-                                else
-                                {
-                                    Main.stackSplit = Main.stackDelay;
-                                }
-
-                                if (item.stack <= 0)
-                                {
-                                    TheDeconstructor.instance.deconGUI.recipeList.Clear();
-                                    item.SetDefaults(0);
-                                }
-                            }
-                        }
-                    }
-                }
             }
 
             protected override void DrawSelf(SpriteBatch spriteBatch)

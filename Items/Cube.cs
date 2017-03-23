@@ -14,14 +14,14 @@ namespace TheDeconstructor.Items
     internal abstract class Cube : ModItem
     {
         private Texture2D animTexture => TheDeconstructor.instance.GetTexture(TexturePath);
-        public Item SealedSource { get; set; } = new Item();
-        public List<Item> SealedItems { get; set; } = new List<Item>();
-        public abstract string TexturePath { get; }
-        public bool CanFail { get; set; }
-        public int InvFC { get; set; }
-        public int InvF { get; set; }
-        public abstract int InvFMax { get; }
-        public CubeState? State { get; set; }
+        internal Item SealedSource { get; set; } = new Item();
+        internal List<Item> SealedItems { get; set; } = new List<Item>();
+        internal abstract string TexturePath { get; }
+        internal bool CanFail { get; set; }
+        internal int InvFC { get; set; }
+        internal int InvF { get; set; }
+        internal abstract int InvFMax { get; }
+        internal CubeState? State { get; set; } = CubeState.Open;
 
         public enum CubeState
         {
@@ -47,10 +47,13 @@ namespace TheDeconstructor.Items
         {
             try
             {
-                TagCompound tc = new TagCompound
+                var tc = new TagCompound
                 {
-                    ["items"] = SealedItems.Select(ItemIO.Save).ToList(),
-                    ["source"] = ItemIO.Save(SealedSource)
+                    ["SealedItems"] = SealedItems.Select(ItemIO.Save).ToList(),
+                    ["SealedSource"] = ItemIO.Save(SealedSource),
+                    ["CanFail"] = CanFail,
+                    ["State"] = (int?)State ?? 0,
+                    ["Value"] = item.value
                 };
                 return tc;
             }
@@ -68,9 +71,12 @@ namespace TheDeconstructor.Items
         {
             try
             {
-                var list = tag.GetList<TagCompound>("items").ToList();
+                var list = tag.GetList<TagCompound>("SealedItems").ToList();
                 list.ForEach(x => SealedItems.Add(ItemIO.Load(x)));
-                SealedSource = ItemIO.Load(tag.GetCompound("source"));
+                SealedSource = ItemIO.Load(tag.GetCompound("SealedSource"));
+                CanFail = tag.GetBool("CanFail");
+                State = (CubeState) tag.GetInt("State");
+                item.value = tag.GetInt("Value");
             }
             catch (Exception e)
             {
@@ -81,16 +87,23 @@ namespace TheDeconstructor.Items
         public override void Load(TagCompound tag) =>
             CubeLoad(tag);
 
+
+        public override bool CanRightClick() =>
+            State == CubeState.Sealed 
+            ||item.type == mod.ItemType<QueerLunarCube>();
+
         public override void RightClick(Player player)
         {
             try
             {
                 if (!State.HasValue) return;
+                int queerType = mod.ItemType<QueerLunarCube>();
 
-                if (State.Value == CubeState.Open)
+                if (item.type == queerType 
+                    && State.Value == CubeState.Open)
                 {
                     item.stack = 2;
-                    // todo
+                    TheDeconstructor.instance.TryToggleGUI();
                 }
                 else if (State.Value == CubeState.Sealed)
                 {
@@ -98,6 +111,15 @@ namespace TheDeconstructor.Items
                     {
                         // Need to figure out a way how to reset weapon prefixes
                         SoundHelper.PlaySound(SoundHelper.SoundType.Redeem);
+                        if (item.type == queerType)
+                        {
+                            var modItem = item.modItem as Cube;
+                            modItem.State = CubeState.Open;
+                            modItem.SealedSource.TurnToAir();
+                            modItem.SealedItems.Clear();
+                            modItem.CanFail = false;
+                            item.value = 1;
+                        }
                         //Item giveItem = new Item();
                         foreach (var infoBagItem in SealedItems)
                         {
@@ -144,7 +166,7 @@ namespace TheDeconstructor.Items
 
         public virtual void NotifyLoss(int type, int stack)
         {
-            string str = $"Oh noes! You've lost [i/s1:{type}] (x{stack})!";
+            string str = $"[i/s1:{type}] (x{stack}) broke along with the cube's seal!";
             Main.NewText(str, 255);
             if (Main.netMode == NetmodeID.MultiplayerClient)
                 NetMessage.SendData(MessageID.ChatText, -1, -1, str, 255);
@@ -152,30 +174,58 @@ namespace TheDeconstructor.Items
 
         public override void ModifyTooltips(List<TooltipLine> tooltips)
         {
-            if (SealedSource != null && !SealedSource.IsAir)
-            {
-                tooltips.Add(new TooltipLine(mod, $"{mod.Name}: LunarCube: Source",
-                        $"Source:[i/s1:{SealedSource.type}][c/{SealedSource.GetTooltipColor().ToHexString().Substring(1)}:{SealedSource.name} ](x{SealedSource.stack})"));
-            }
-            tooltips.Add(new TooltipLine(mod, $"{mod.Name}: LunarCube: Title", "Open the seal to receive:"));
-            foreach (var infoBagItem in SealedItems)
-            {
-                if (!infoBagItem.IsAir)
-                    tooltips.Add(new TooltipLine(mod, $"{mod.Name}: LunarCube: Content: {infoBagItem.type}",
-                        $"[i/s1:{infoBagItem.type}][c/{infoBagItem.GetTooltipColor().ToHexString().Substring(1)}:{infoBagItem.name} ](x{infoBagItem.stack})"));
-            }
+            // Remove regular price tooltip
+            var priceTT = tooltips.FirstOrDefault(x => x.mod == "Terraria" & x.Name == "Price");
+            if (priceTT != null 
+                && State == CubeState.Sealed)
+                tooltips.Remove(priceTT);
 
+            // Tooltip
+            tooltips.Add(State == CubeState.Sealed
+                 ? new TooltipLine(mod, $"{mod.Name}: LunarCube: Title", "Sealed") { overrideColor = Color.Yellow }
+                 : new TooltipLine(mod, $"{mod.Name}: LunarCube: Title", "Unsealed") { overrideColor = Color.Yellow });
+
+            // Loss warning
             if (CanFail)
             {
                 var tt = new TooltipLine(mod, $"{mod.Name}: LunarCube: Loss Warning",
-                    $"Chance of material loss") {overrideColor = Colors.RarityRed};
+                    $"Chance of content loss")
+                { overrideColor = Colors.RarityRed };
                 tooltips.Add(tt);
             }
+
+            // Value
+            if (item.value > 1)
+            {
+                tooltips.Add(new TooltipLine(mod, $"{mod.Name}: LunarCube: Value",
+                    "Value:" + new ItemValue().SetFromCopperValue(item.value).ToSellValue().ToTagString()));
+            }
+
+            // Source item
+            if (SealedSource != null 
+                && !SealedSource.IsAir)
+            {
+                tooltips.Add(new TooltipLine(mod, $"{mod.Name}: LunarCube: Source",
+                        $"Sealed item:[i/s1:{SealedSource.type}][c/{SealedSource.GetTooltipColor().ToHexString().Substring(1)}:{SealedSource.name} ](x{SealedSource.stack})"));
+            }
+
+            // Contents
+            if (SealedItems.Any<Item>())
+            {
+                tooltips.Add(new TooltipLine(mod, $"{mod.Name}: LunarCube: Content Title", "Contains:"));
+                foreach (var infoBagItem in SealedItems)
+                {
+                    if (!infoBagItem.IsAir)
+                        tooltips.Add(new TooltipLine(mod, $"{mod.Name}: LunarCube: Content: {infoBagItem.type}",
+                            $"[i/s1:{infoBagItem.type}][c/{infoBagItem.GetTooltipColor().ToHexString().Substring(1)}:{infoBagItem.name} ](x{infoBagItem.stack})"));
+                }
+            }
+
         }
 
         public virtual Cube CubeClone<T>() where T : Cube, new()
         {
-            var clone = (Cube)new T()
+            Cube clone = new T
             {
                 SealedSource = (Item)this.SealedSource.Clone(),
                 SealedItems = new List<Item>(this.SealedItems),
@@ -184,9 +234,6 @@ namespace TheDeconstructor.Items
             };
             return clone;
         }
-
-        public override bool CanRightClick() => 
-            true;
 
         public virtual bool CubeDrawInventory(SpriteBatch spriteBatch, Vector2 position, Rectangle frame,
             Color drawColor, Color itemColor, Vector2 origin, float scale)

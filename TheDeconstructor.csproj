@@ -74,6 +74,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="build.txt" />
+    <Content Include="changelog.txt" />
     <Content Include="description.txt" />
     <Content Include="Items\Deconstructor.png" />
     <Content Include="Items\LunarCube.png" />
@@ -88,6 +89,9 @@
     <Content Include="Sounds\Custom\Redeem.wav" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>"C:\Program Files (x86)\Steam\steamapps\common\Terraria\tModLoaderServer.exe" -build "$(ProjectDir)\" -eac "$(TargetPath)"</PostBuildEvent>
+  </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

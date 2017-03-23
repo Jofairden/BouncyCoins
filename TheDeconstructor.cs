@@ -10,6 +10,7 @@ namespace TheDeconstructor
 	internal class DeconPlayer : ModPlayer
 	{
 		public Vector2 DeconDist = Vector2.Zero;
+        public bool UsedQueerCube = false;
 	}
 
 	internal static class SoundHelper
@@ -73,7 +74,7 @@ namespace TheDeconstructor
 			int insertLayer = layers.FindIndex(layer => layer.Name.Equals("Vanilla: Mouse Text"));
 			if (insertLayer != -1)
 			{
-				layers.Insert(insertLayer, new MethodSequenceListItem("Deconstructor: UI",
+				layers.Insert(insertLayer, new MethodSequenceListItem($"{instance.Name}: UI",
 					delegate
 					{
 						if (deconGUI.visible)
@@ -89,5 +90,12 @@ namespace TheDeconstructor
 			insertLayer = layers.FindIndex(layer => layer.Name.Equals("Vanilla: Interact Item Icon"));
 			layers[insertLayer].Skip = insertLayer != -1 && deconGUI.IsMouseHovering;
 		}
-	}
+
+	    internal void TryToggleGUI()
+	    {
+            SoundHelper.PlaySound(!deconGUI.visible ? SoundHelper.SoundType.OpenUI : SoundHelper.SoundType.CloseUI);
+            deconGUI.visible = !deconGUI.visible;
+            deconGUI.ToggleUI(!deconGUI.visible);
+        }
+    }
 }

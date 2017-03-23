@@ -1,0 +1,24 @@
+﻿Changelog from 0.1.1 to 0.2
+
+	Rename
+		'Deconstructor' is now 'Lunar Deconstructor'
+
+	New cubes!
+		Lunar Deconstructor no longer 'zips' into a goodie bag, instead uses a Lunar Cube as resource
+		'Queer Lunar' Cube is also available, which can be sealed and unsealed indefinitely (Lunar Cube is one time use)
+		Overhauled tooltips for cubes
+
+	UI
+		There's now a new slot (top slot) which will take an unsealed cube, contents will be sealed into this cube
+		The bottom slot is for the item you want to seal
+	
+	Code
+		Massive improvements/reworks in code, check github
+
+Todo:
+	
+	Make sure UI doesn't close when using Queer cube
+	Make sure UI takes Queer cube as input when opened by Queer cube
+	Make sure UI 'refunds' cube when one is in the panel
+	Have cube/source panels show a feint silhouette of which item is supposed to be in it (possibly along with helper tooltips)
+	Add recipes to craft cubes

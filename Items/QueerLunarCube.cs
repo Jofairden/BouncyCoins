@@ -14,19 +14,18 @@ namespace TheDeconstructor.Items
         {
             base.SetDefaults();
             item.name = "Queer Lunar Cube";
-            item.toolTip = "Right click to seal materials";
             item.width = 26;
             item.height = 38;
-            State = CubeState.Open;
+            item.rare = 10;
         }
 
         public override ModItem Clone()
              => CubeClone<QueerLunarCube>() as ModItem;
 
-        public override string TexturePath => 
+        internal override string TexturePath => 
             "Items/QueerLunarCubeFrames";
 
-        public override int InvFMax =>
+        internal override int InvFMax =>
             7;
     }
 

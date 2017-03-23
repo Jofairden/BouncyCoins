@@ -70,13 +70,7 @@ namespace TheDeconstructor.Tiles
 		public override void RightClick(int i, int j)
 		{
 			//Main.NewTextMultiline(Main.LocalPlayer.GetModPlayer<DeconPlayer>(mod).DeconDist.ToString());
-			if (!TheDeconstructor.instance.deconGUI.visible)
-			{
-				SoundHelper.PlaySound(SoundHelper.SoundType.OpenUI);
-				TheDeconstructor.instance.deconGUI.Update(Main._drawInterfaceGameTime);
-			}
-			TheDeconstructor.instance.deconGUI.visible = !TheDeconstructor.instance.deconGUI.visible;
-			TheDeconstructor.instance.deconGUI.ToggleUI();
+		    TheDeconstructor.instance.TryToggleGUI();
 		}
 
 		public override void AnimateTile(ref int frame, ref int frameCounter)
