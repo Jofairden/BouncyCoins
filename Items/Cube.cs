@@ -96,8 +96,7 @@ namespace TheDeconstructor.Items
 			try
 			{
 				if (!State.HasValue) return;
-				int queerType = mod.ItemType<QueerLunarCube>();
-				bool isQueer = item.type == queerType;
+				bool isQueer = item.modItem is QueerLunarCube;
 
 				if (State.Value == CubeState.Open)
 				{
@@ -111,6 +110,11 @@ namespace TheDeconstructor.Items
 				}
 				else if (State.Value == CubeState.Sealed)
 				{
+					if (TheDeconstructor.instance.deconGUI.visible)
+					{
+						item.stack = 2;
+						return;
+					}
 					if (SealedItems != null
 						&& SealedItems.Count >= 1)
 					{
@@ -153,7 +157,7 @@ namespace TheDeconstructor.Items
 							}
 						}
 						// Queer cube isn't lost upon unsealing
-						if (item.type == queerType)
+						if (isQueer)
 						{
 							item.stack = 2;
 							var modItem = item.modItem as Cube;
