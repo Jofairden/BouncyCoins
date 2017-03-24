@@ -261,7 +261,7 @@ namespace TheDeconstructor
 				base.Append(recipeBag);
 
 				errorTime = 2;
-				errorText = new UIText("");
+				errorText = new UIText(" ");
 				errorText.Width.Set(25f, 0f);
 				errorText.Height.Set(25f, 0f);
 				errorText.Top.Set(recipeBag.Top.Pixels + Main.fontMouseText.MeasureString(errorText.Text).Y / 2f, 0f);
@@ -454,8 +454,8 @@ namespace TheDeconstructor
 						Main.playerInventory = true;
 
 						// Handle stack splitting here
-						if (Main.stackSplit <= 1 && item.type != 0 &&
-							(Main.mouseItem.IsTheSameAs(item) || Main.mouseItem.type == 0))
+						if (Main.stackSplit <= 1 &&
+							(Main.mouseItem.IsTheSameAs(item) || Main.mouseItem.IsAir))
 						{
 							int num2 = Main.superFastStack + 1;
 							for (int j = 0; j < num2; j++)
@@ -467,9 +467,9 @@ namespace TheDeconstructor
 									{
 										Main.PlaySound(18, -1, -1, 1);
 									}
-									if (Main.mouseItem.type == 0)
+									if (Main.mouseItem.IsAir)
 									{
-										Main.mouseItem.netDefaults(item.netID);
+										Main.mouseItem = item.Clone();
 										if (item.prefix != 0)
 										{
 											Main.mouseItem.Prefix((int)item.prefix);
@@ -483,7 +483,7 @@ namespace TheDeconstructor
 									if (item.stack <= 0)
 									{
 										TheDeconstructor.instance.deconGUI.recipeList.Clear();
-										item.SetDefaults(0);
+										item.TurnToAir();
 									}
 								}
 							}
