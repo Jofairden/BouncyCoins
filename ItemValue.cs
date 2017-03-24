@@ -132,7 +132,7 @@ namespace TheDeconstructor
 
 		public static ItemValue operator +(ItemValue first, float second)
 		{
-			return new ItemValue().SetFromCopperValue((int) (first.RawValue + second));
+			return new ItemValue().SetFromCopperValue((int)(first.RawValue + second));
 		}
 
 		public static ItemValue operator -(ItemValue first, ItemValue second)

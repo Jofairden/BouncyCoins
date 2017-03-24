@@ -9,8 +9,8 @@ using Terraria.ModLoader;
 
 namespace TheDeconstructor.Items
 {
-    internal sealed class QueerLunarCube : Cube
-    {
+	internal sealed class QueerLunarCube : Cube
+	{
 		public override bool Autoload(ref string name, ref string texture, IList<EquipType> equips)
 		{
 			texture = $"{mod.Name}/Items/LunarCube";
@@ -18,22 +18,22 @@ namespace TheDeconstructor.Items
 		}
 
 		public override void SetDefaults()
-        {
-            base.SetDefaults();
-            item.name = "Queer Lunar Cube";
-            item.width = 20;
-            item.height = 28;
-            item.rare = 10;
-        }
+		{
+			base.SetDefaults();
+			item.name = "Queer Lunar Cube";
+			item.width = 20;
+			item.height = 28;
+			item.rare = 10;
+		}
 
-        public override ModItem Clone()
-             => CubeClone<QueerLunarCube>() as ModItem;
+		public override ModItem Clone()
+			 => CubeClone<QueerLunarCube>() as ModItem;
 
-        internal override string TexturePath => 
-            "Items/LunarCubeFrames";
+		internal override string TexturePath =>
+			"Items/LunarCubeFrames";
 
-        internal override int InvFMax =>
-            7;
-    }
+		internal override int InvFMax =>
+			7;
+	}
 
 }

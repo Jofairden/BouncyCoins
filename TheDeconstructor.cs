@@ -10,7 +10,7 @@ namespace TheDeconstructor
 	internal class DeconPlayer : ModPlayer
 	{
 		public Vector2 DeconDist = Vector2.Zero;
-        public bool UsedQueerCube = false;
+		public bool UsedQueerCube = false;
 	}
 
 	internal static class SoundHelper
@@ -91,18 +91,18 @@ namespace TheDeconstructor
 			layers[insertLayer].Skip = insertLayer != -1 && deconGUI.IsMouseHovering;
 		}
 
-	    internal void TryToggleGUI(bool? state = null)
-	    {        
-		    bool visible =
-			    state ?? !deconGUI.visible;
+		internal void TryToggleGUI(bool? state = null)
+		{
+			bool visible =
+				state ?? !deconGUI.visible;
 
 			SoundHelper.PlaySound(
-				visible 
-				? SoundHelper.SoundType.OpenUI 
+				visible
+				? SoundHelper.SoundType.OpenUI
 				: SoundHelper.SoundType.CloseUI);
 
 			deconGUI.visible = visible;
-            deconGUI.ToggleUI(visible);
-        }
-    }
+			deconGUI.ToggleUI(visible);
+		}
+	}
 }

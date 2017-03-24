@@ -30,9 +30,9 @@ namespace TheDeconstructor.Items
 
 		public override void ModifyTooltips(List<TooltipLine> tooltips)
 		{
-		    var ttl = tooltips.FirstOrDefault(x =>
-		        x.mod.Equals("Terraria", System.StringComparison.OrdinalIgnoreCase)
-		        && x.Name.Equals("ItemName", System.StringComparison.OrdinalIgnoreCase));
+			var ttl = tooltips.FirstOrDefault(x =>
+				x.mod.Equals("Terraria", System.StringComparison.OrdinalIgnoreCase)
+				&& x.Name.Equals("ItemName", System.StringComparison.OrdinalIgnoreCase));
 
 			if (ttl != null)
 				ttl.overrideColor = new Color(Main.DiscoR, Main.DiscoG, Main.DiscoB);

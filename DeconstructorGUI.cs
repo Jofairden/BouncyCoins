@@ -4,16 +4,19 @@ using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Terraria;
+using Terraria.DataStructures;
 using Terraria.GameContent.UI.Elements;
 using Terraria.ID;
 using Terraria.UI;
 using TheDeconstructor.Items;
+using TheDeconstructor.Tiles;
 
 
 namespace TheDeconstructor
 {
 	internal class DeconstructorGUI : UIState
 	{
+		internal short[] tileData = new short[2];
 		internal bool visible = false;
 		internal bool dragging = false;
 		private Vector2 offset;
@@ -196,17 +199,18 @@ namespace TheDeconstructor
 
 		public override void Update(GameTime gameTime)
 		{
-
 			base.Update(gameTime);
-			var info = Main.LocalPlayer.GetModPlayer<DeconPlayer>(TheDeconstructor.instance);
 
 			// Do not close UI while Queer Cube is in
-			if (!cubeItemPanel.item.IsAir
+			if ((!cubeItemPanel.item.IsAir
 				&& cubeItemPanel.item.modItem is QueerLunarCube)
+				|| tileData == null)
 				return;
 
+			// Get tile entity from tile data (top left 0,0 frame of tile)
+			var TE = TileEntity.ByPosition[new Point16(tileData[0], tileData[1])] as DeconstructorTE;
 			// Close UI if too far from tile
-			if (Math.Abs(info.DeconDist.X) > 12f * 16f || Math.Abs(info.DeconDist.Y) > 12f * 16f
+			if (Math.Abs(TE.DistanceToLocalPlayer.X) > 12f * 16f || Math.Abs(TE.DistanceToLocalPlayer.Y) > 12f * 16f
 				|| Main.inputTextEscape || Main.LocalPlayer.dead || Main.gameMenu)
 			{
 				TheDeconstructor.instance.TryToggleGUI(false);
