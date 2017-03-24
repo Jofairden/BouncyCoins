@@ -256,7 +256,7 @@ namespace TheDeconstructor.Items
 		{
 			Color useColor =
 				item.type == mod.ItemType<QueerLunarCube>()
-					? Utils.DiscoColor()
+					? Tools.DiscoColor()
 					: drawColor;
 
 			if (InvFC++ >= 4)
@@ -277,7 +277,7 @@ namespace TheDeconstructor.Items
 		{
 			Color useColor =
 				item.type == mod.ItemType<QueerLunarCube>()
-					? Utils.DiscoColor()
+					? Tools.DiscoColor()
 					: lightColor;
 			Main.itemFrameCounter[whoAmI]++;
 			if (Main.itemFrameCounter[whoAmI] >= 4)
@@ -297,7 +297,7 @@ namespace TheDeconstructor.Items
 		{
 			Color useColor =
 			   item.type == mod.ItemType<QueerLunarCube>()
-				   ? Utils.DiscoColor()
+				   ? Tools.DiscoColor()
 				   : Color.White;
 			var sine = (float)Math.Sin(Main.essScale * 0.50f);
 			var r = 0.05f + 0.35f * sine * useColor.R * 0.01f;

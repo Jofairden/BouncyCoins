@@ -7,6 +7,7 @@ using Terraria;
 using Terraria.DataStructures;
 using Terraria.GameContent.UI.Elements;
 using Terraria.ID;
+using Terraria.ModLoader;
 using Terraria.UI;
 using TheDeconstructor.Items;
 using TheDeconstructor.Tiles;
@@ -30,7 +31,7 @@ namespace TheDeconstructor
 		internal UIPanel basePanel;
 		internal UIText baseTitle;
 		internal UIImageButton closeButton;
-		internal UIInteractableItemPanel cubeItemPanel;
+		internal UIItemCubePanel cubeItemPanel;
 		internal UIItemSourcePanel sourceItemPanel;
 		internal UIRecipeList recipeList;
 		internal UIScrollbar recipeScrollbar;
@@ -97,18 +98,16 @@ namespace TheDeconstructor
 			basePanel.Append(closeButton);
 
 			cubeItemPanel =
-				new UIInteractableItemPanel(0, 0,
+				new UIItemCubePanel(0, 0,
 						TheDeconstructor.instance.GetTexture("Items/LunarCube"),
-						"Place an unsealed cube here", false, new short[]
-						{
-							(short)TheDeconstructor.instance.ItemType<LunarCube>(),
-							(short)TheDeconstructor.instance.ItemType<QueerLunarCube>()
-						});
+						"Place an unsealed cube here");
 
 			cubeItemPanel.Top.Set(cubeItemPanel.Height.Pixels / 2f + vpadding / 2f, 0f);
 			basePanel.Append(cubeItemPanel);
 
-			sourceItemPanel = new UIItemSourcePanel();
+			sourceItemPanel = new UIItemSourcePanel(0, 0,
+				ModLoader.GetTexture("Terraria/Item_" + ItemID.WoodenSword),
+				"Place an item you want to destruct here");
 			sourceItemPanel.Top.Set(cubeItemPanel.Top.Pixels + cubeItemPanel.Height.Pixels + vpadding / 2f, 0f);
 			basePanel.Append(sourceItemPanel);
 
@@ -239,13 +238,11 @@ namespace TheDeconstructor
 					UIItemPanel matPanel = new UIItemPanel();
 					matPanel.Left.Set((matPanel.Width.Pixels + vpadding / 2f) * (i % 7), 0f);
 					matPanel.Top.Set(i < 7 ? 0f : matPanel.Height.Pixels + vpadding / 2f, 0f);
-					matPanel.displayOnly = true;
 					materials.Add(matPanel);
 				}
 				UIItemPanel lastPanel = new UIItemPanel();
 				lastPanel.Left.Set(0f, 0f);
 				lastPanel.Top.Set(2f * lastPanel.Height.Pixels + vpadding, 0f);
-				lastPanel.displayOnly = true;
 				materials.Add(lastPanel);
 
 				base.Width.Set(width, 0f);
@@ -387,15 +384,41 @@ namespace TheDeconstructor
 			}
 		}
 
+		// Is cube panel (only accepts unsealed cube)
+		internal sealed class UIItemCubePanel : UIInteractableItemPanel
+		{
+			public UIItemCubePanel(int netID = 0, int stack = 0, Texture2D hintTexture = null, string hintText = null) :
+				base(netID, stack, hintTexture, hintText)
+			{
+			}
+
+			public override bool CanTakeItem(Item item)
+			{
+				return item.modItem is Cube
+						&& (item.modItem as Cube).State == Cube.CubeState.Open;
+			}
+		}
+
 		// Is source panel (item to deconstruct)
 		internal sealed class UIItemSourcePanel : UIInteractableItemPanel
 		{
+			public UIItemSourcePanel(int netID = 0, int stack = 0, Texture2D hintTexture = null, string hintText = null) :
+				base(netID, stack, hintTexture, hintText)
+			{
+
+			}
+
+			public override bool CanTakeItem(Item item)
+			{
+				return (item.modItem as Cube)?.State != Cube.CubeState.Sealed;
+			}
+
 			public override void PostOnClick(UIMouseEvent evt, UIElement e)
 			{
 				DoUpdate();
 			}
 
-			public override void PostOnRightClick(UIMouseEvent evt, UIElement e)
+			public override void PostOnRightClick()
 			{
 				DoUpdate();
 			}
@@ -404,7 +427,8 @@ namespace TheDeconstructor
 			{
 				TheDeconstructor.instance.deconGUI.recipeList.Clear();
 
-				if (item.IsAir) return;
+				if (item.IsAir)
+					return;
 
 				currentRecipes = RecipeSearcher.FindRecipes(item);
 				RecipeSearcher.FillWithRecipes(item, currentRecipes,
@@ -416,73 +440,62 @@ namespace TheDeconstructor
 		// Allows user to put in / take out item
 		internal class UIInteractableItemPanel : UIItemPanel
 		{
-			public bool TakeOutOnly;
-			public bool allowsAll;
-			public List<short> allowedItems;
-
-			public UIInteractableItemPanel(int netID = 0, int stack = 0, Texture2D hintTexture = null, string hintText = null, bool allowsAll = true, IEnumerable<short> allowedItems = null) : base(netID, stack, hintTexture, hintText)
+			public UIInteractableItemPanel(int netID = 0, int stack = 0, Texture2D hintTexture = null, string hintText = null)
+				: base(netID, stack, hintTexture, hintText)
 			{
-				displayOnly = false; // not just for display
 				base.OnClick += UIInteractableItemPanel_OnClick;
-				base.OnRightClick += UIInteractableItemPanel_OnRightClick;
-				this.allowsAll = allowsAll;
-				this.allowedItems = allowedItems?.ToList() ?? null;
 			}
 
-			public virtual void PostOnRightClick(UIMouseEvent evt, UIElement e) { }
-			public virtual void PostOnClick(UIMouseEvent evt, UIElement e) { }
-
-			private void UIInteractableItemPanel_OnRightClick(UIMouseEvent evt, UIElement e)
+			public override void Update(GameTime gameTime)
 			{
-				try
+				base.Update(gameTime);
+				if (base.IsMouseHovering
+					&& Main.mouseRight)
 				{
-					if (displayOnly) return;
-
-					if (TakeOutOnly)
-					{
-						if (!item.IsAir && Main.mouseItem.IsAir)
-						{
-							Main.mouseItem = item.Clone();
-							item.TurnToAir();
-						}
-						return;
-					}
-
+					// Slot has an item
 					if (!item.IsAir)
 					{
 						// Open inventory
 						Main.playerInventory = true;
 
-						// Handle stack splitting here
+						// Mouseitem has to be the same as slot
 						if (Main.stackSplit <= 1 &&
-							(Main.mouseItem.IsTheSameAs(item) || Main.mouseItem.IsAir))
+							(Main.mouseItem.type == item.type
+							|| Main.mouseItem.IsAir))
 						{
 							int num2 = Main.superFastStack + 1;
 							for (int j = 0; j < num2; j++)
 							{
-								if ((Main.mouseItem.stack < Main.mouseItem.maxStack || Main.mouseItem.type == 0) &&
-									item.stack > 0)
+								// Mouseitem is air, or stack is smaller than maxstack, and slot has stack
+								if (Main.mouseItem.IsAir
+									|| (Main.mouseItem.stack < Main.mouseItem.maxStack)
+									&& item.stack > 0)
 								{
+									// Play sound
 									if (j == 0)
 									{
 										Main.PlaySound(18, -1, -1, 1);
 									}
+									// Mouseitem is air, clone item
 									if (Main.mouseItem.IsAir)
 									{
 										Main.mouseItem = item.Clone();
+										// If it has prefix, copy it
 										if (item.prefix != 0)
 										{
 											Main.mouseItem.Prefix((int)item.prefix);
 										}
 										Main.mouseItem.stack = 0;
 									}
+									// Add to mouseitem stack
 									Main.mouseItem.stack++;
+									// Take from slot stack
 									item.stack--;
 									Main.stackSplit = Main.stackSplit == 0 ? 15 : Main.stackDelay;
 
+									// Reset item
 									if (item.stack <= 0)
 									{
-										TheDeconstructor.instance.deconGUI.recipeList.Clear();
 										item.TurnToAir();
 									}
 								}
@@ -490,80 +503,73 @@ namespace TheDeconstructor
 						}
 					}
 
-					PostOnRightClick(evt, e);
-				}
-				catch (Exception ex)
-				{
-					Main.NewTextMultiline(ex.ToString());
+					PostOnRightClick();
 				}
 			}
 
+			public virtual bool CanTakeItem(Item item) => true;
+			public virtual void PostOnRightClick() { }
+			public virtual void PostOnClick(UIMouseEvent evt, UIElement e) { }
+
 			private void UIInteractableItemPanel_OnClick(UIMouseEvent evt, UIElement e)
 			{
-				try
+				// Slot has an item
+				if (!item.IsAir)
 				{
-					if (displayOnly)
-						return;
-
-					if (TakeOutOnly)
+					// Only slot has an item
+					if (Main.mouseItem.IsAir)
 					{
-						if (!item.IsAir && Main.mouseItem.IsAir)
-						{
-							Main.mouseItem = item.Clone();
-							item.TurnToAir();
-						}
-						return;
+						Main.playerInventory = true;
+						Main.mouseItem = item.Clone();
+						item.TurnToAir();
 					}
-
-					if ((item.IsAir
-							 && !allowsAll
-							 && allowedItems != null
-							 && !allowedItems.Contains((short)Main.mouseItem.type)))
-						return;
-
-					var panel = (e as UIItemPanel);
-					if (panel == null)
-						return;
-
-					Main.playerInventory = true;
-					// Panel has item, cursor has item
-					if (!panel.item.IsAir && !Main.mouseItem.IsAir)
+					// Mouse has an item
+					// Can take mouse item
+					else if (CanTakeItem(Main.mouseItem))
 					{
-						// Attempt a swap
-						if (panel.item.type != Main.mouseItem.type)
+						Main.playerInventory = true;
+						// Items are the same type
+						if (item.type == Main.mouseItem.type)
 						{
-							var tempItem = Main.mouseItem.Clone();
-							var tempItem2 = panel.item.Clone();
-							panel.item = tempItem;
-							Main.mouseItem = tempItem2;
+							// Attempt increment stack
+							var newStack = item.stack + Main.mouseItem.stack;
+							// Mouse item stack fits, increment
+							if (item.maxStack >= newStack)
+							{
+								item.stack = newStack;
+								Main.mouseItem.TurnToAir();
+							}
+							// Doesn't fit, set item to maxstack, set mouse item stack to difference
+							else
+							{
+								var stackDiff = newStack - item.maxStack;
+								item.stack = item.maxStack;
+								Main.mouseItem.stack = stackDiff;
+							}
 						}
+						// Items are not the same type
 						else
-						// Attempt increment stack
 						{
-							if (panel.item.maxStack <= 1) return;
-							panel.item.stack += Main.mouseItem.stack;
-							Main.mouseItem.TurnToAir();
+							// Swap mouse item and slot item
+							var tmp = item.Clone();
+							var tmp2 = Main.mouseItem.Clone();
+							Main.mouseItem = tmp;
+							item = tmp2;
 						}
-					}
-					// Panel has item
-					else if (!panel.item.IsAir)
-					{
-						Main.mouseItem = panel.item.Clone();
-						panel.item.TurnToAir();
-					}
-					// Mouse has item
-					else if (!Main.mouseItem.IsAir)
-					{
-						panel.item = Main.mouseItem.Clone();
-						Main.mouseItem.TurnToAir();
-					}
 
-					PostOnClick(evt, e);
+					}
 				}
-				catch (Exception ex)
+				// Slot has no item
+				// Slot can take mouse item
+				else if (CanTakeItem(Main.mouseItem))
 				{
-					Main.NewTextMultiline(ex.ToString());
+					Main.playerInventory = true;
+					item = Main.mouseItem.Clone();
+					Main.mouseItem.TurnToAir();
 				}
+
+				// PostClick
+				PostOnClick(evt, e);
 			}
 		}
 
@@ -574,10 +580,9 @@ namespace TheDeconstructor
 			internal const float panelheight = 50f;
 			internal const float panelpadding = 0f;
 
-			public string HintText;
-			public Texture2D HintTexture;
+			public string HintText { get; set; }
+			public Texture2D HintTexture { get; set; }
 			public Item item;
-			public bool displayOnly;
 
 			public UIItemPanel(int netID = 0, int stack = 0, Texture2D hintTexture = null, string hintText = null)
 			{
@@ -594,83 +599,82 @@ namespace TheDeconstructor
 			protected override void DrawSelf(SpriteBatch spriteBatch)
 			{
 				base.DrawSelf(spriteBatch);
-				try
+
+				Texture2D texture2D;
+				CalculatedStyle innerDimensions = base.GetInnerDimensions();
+				Color drawColor;
+
+				if (HintTexture != null
+					&& item.IsAir)
 				{
-					Texture2D texture2D;
-					CalculatedStyle innerDimensions = base.GetInnerDimensions();
-					Color drawColor;
+					texture2D = HintTexture;
+					drawColor = Color.LightGray * 0.5f;
+					if (base.IsMouseHovering)
+					{
+						Main.hoverItemName = HintText ?? string.Empty;
+					}
+				}
+				else if (item.IsAir)
+					return;
+				else
+				{
+					texture2D = Main.itemTexture[item.type];
+					drawColor = this.item.GetAlpha(Color.White);
+					if (base.IsMouseHovering)
+					{
+						Main.hoverItemName = item.name;
+						Main.toolTip = item.Clone();
+						Main.toolTip.GetModInfo<DeconItemInfo>(TheDeconstructor.instance).addValueTooltip = true;
+						//ItemValue value = new ItemValue().SetFromCopperValue(item.value*item.stack);
+						Main.toolTip.name =
+							$"{Main.toolTip.name}{Main.toolTip.modItem?.mod.Name.Insert((int)Main.toolTip.modItem?.mod.Name.Length, "]").Insert(0, " [")}";
+					}
+				}
 
-					if (HintTexture != null && item.IsAir)
-					{
-						texture2D = HintTexture;
-						drawColor = Color.LightGray * 0.5f;
-						if (base.IsMouseHovering)
-						{
-							Main.hoverItemName = HintText ?? string.Empty;
-						}
-					}
-					else if (item.IsAir)
-					{
-						return;
-					}
-					else
-					{
-						texture2D = Main.itemTexture[item.type];
-						drawColor = this.item.GetAlpha(Color.White);
-						if (base.IsMouseHovering)
-						{
-							Main.hoverItemName = item.name;
-							Main.toolTip = item.Clone();
-							Main.toolTip.GetModInfo<DeconItemInfo>(TheDeconstructor.instance).addValueTooltip = true;
-							//ItemValue value = new ItemValue().SetFromCopperValue(item.value*item.stack);
-							Main.toolTip.name =
-								$"{Main.toolTip.name}{Main.toolTip.modItem?.mod.Name.Insert((int)Main.toolTip.modItem?.mod.Name.Length, "]").Insert(0, " [")}";
-						}
-					}
-
-					var frame =
+				var frame =
 						!item.IsAir && Main.itemAnimations[item.type] != null
 							? Main.itemAnimations[item.type].GetFrame(texture2D)
 							: texture2D.Frame(1, 1, 0, 0);
 
-					float drawScale = 1f;
-					float num2 = (float)innerDimensions.Width * 1f;
-					if ((float)frame.Width > num2 || (float)frame.Height > num2)
+				float drawScale = 1f;
+				if ((float)frame.Width > innerDimensions.Width || (float)frame.Height > innerDimensions.Width)
+				{
+					if (frame.Width > frame.Height)
 					{
-						if (frame.Width > frame.Height)
-						{
-							drawScale = num2 / (float)frame.Width;
-						}
-						else
-						{
-							drawScale = num2 / (float)frame.Height;
-						}
+						drawScale = innerDimensions.Width / (float)frame.Width;
 					}
-
-					Vector2 drawPosition = new Vector2(innerDimensions.X, innerDimensions.Y);
-					drawPosition.X += (float)innerDimensions.Width * 1f / 2f - (float)frame.Width * drawScale / 2f;
-					drawPosition.Y += (float)innerDimensions.Height * 1f / 2f - (float)frame.Height * drawScale / 2f;
-
-					spriteBatch.Draw(texture2D, drawPosition, new Rectangle?(frame), drawColor, 0f,
-						Vector2.Zero, drawScale, SpriteEffects.None, 0f);
-
-					if (this.item?.color != default(Color))
+					else
 					{
-						spriteBatch.Draw(texture2D, drawPosition, new Rectangle?(frame), drawColor, 0f,
-							Vector2.Zero, drawScale, SpriteEffects.None, 0f);
-					}
-
-					// Draw stack count
-					if (this.item?.stack > 1)
-					{
-						spriteBatch.DrawString(Main.fontItemStack, Math.Min(9999, item.stack).ToString(),
-							new Vector2(innerDimensions.Position().X + 10f * drawScale, innerDimensions.Position().Y + 26f * drawScale),
-							Color.White, 0f, Vector2.Zero, drawScale, SpriteEffects.None, 0f);
+						drawScale = innerDimensions.Width / (float)frame.Height;
 					}
 				}
-				catch (Exception e)
+
+				Vector2 drawPosition = new Vector2(innerDimensions.X, innerDimensions.Y);
+				drawPosition.X += (float)innerDimensions.Width * 1f / 2f - (float)frame.Width * drawScale / 2f;
+				drawPosition.Y += (float)innerDimensions.Height * 1f / 2f - (float)frame.Height * drawScale / 2f;
+
+				spriteBatch.Draw(texture2D, drawPosition, new Rectangle?(frame), drawColor, 0f,
+					Vector2.Zero, drawScale, SpriteEffects.None, 0f);
+
+				if (this.item?.color != default(Color))
 				{
-					Main.NewTextMultiline(e.ToString());
+					spriteBatch.Draw(texture2D, drawPosition, new Rectangle?(frame), drawColor, 0f,
+						Vector2.Zero, drawScale, SpriteEffects.None, 0f);
+				}
+
+				// Draw stack count
+				if (this.item?.stack > 1)
+				{
+					Terraria.Utils.DrawBorderStringFourWay(
+						spriteBatch,
+						Main.fontItemStack,
+						Math.Min(9999, item.stack).ToString(),
+						innerDimensions.Position().X + 10f * drawScale,
+						innerDimensions.Position().Y + 26f * drawScale,
+						Color.White,
+						Color.Black,
+						Vector2.Zero,
+						drawScale);
 				}
 			}
 

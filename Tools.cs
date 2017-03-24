@@ -6,7 +6,7 @@ using Terraria.ID;
 
 namespace TheDeconstructor
 {
-	public static class Utils
+	public static class Tools
 	{
 		public static bool IsTopLeftFrame(this Tile tile) =>
 			tile.frameX == 0

@@ -128,7 +128,7 @@ namespace TheDeconstructor.Tiles
 					&& !inst.deconGUI.cubeItemPanel.item.IsAir
 					&& inst.deconGUI.cubeItemPanel.item.modItem is QueerLunarCube)
 				{
-					useColor = Utils.DiscoColor();
+					useColor = Tools.DiscoColor();
 				}
 			}
 
@@ -161,7 +161,7 @@ namespace TheDeconstructor.Tiles
 				{
 					Color useColor =
 						inst.deconGUI.cubeItemPanel.item.modItem is QueerLunarCube
-							? Utils.DiscoColor()
+							? Tools.DiscoColor()
 							: Color.White;
 
 					Vector2 zero = Main.drawToScreen
