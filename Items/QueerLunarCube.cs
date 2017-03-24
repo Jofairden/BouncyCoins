@@ -34,6 +34,16 @@ namespace TheDeconstructor.Items
 
 		internal override int InvFMax =>
 			7;
+
+		public override void AddRecipes()
+		{
+			var recipe = new ModRecipe(mod);
+			recipe.AddRecipeGroup("Fragment");
+			recipe.AddIngredient(mod.ItemType<LunarCube>(), 1);
+			recipe.AddTile(mod.TileType<Tiles.Deconstructor>());
+			recipe.SetResult(this);
+			recipe.AddRecipe();
+		}
 	}
 
 }

@@ -1,5 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Terraria;
 using Terraria.ID;
 using Terraria.ModLoader;
 
@@ -24,5 +25,15 @@ namespace TheDeconstructor.Items
 
 		internal override int InvFMax =>
 			7;
+
+		public override void AddRecipes()
+		{
+			var recipe = new ModRecipe(mod);
+			recipe.AddRecipeGroup("Fragment");
+			recipe.AddIngredient(ItemID.LunarBar);
+			recipe.AddTile(mod.TileType<Tiles.Deconstructor>());
+			recipe.SetResult(this);
+			recipe.AddRecipe();
+		}
 	}
 }

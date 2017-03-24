@@ -87,6 +87,8 @@ namespace TheDeconstructor.Items
 		public override void Load(TagCompound tag) =>
 			CubeLoad(tag);
 
+		public override void OnCraft(Recipe recipe) =>
+			SoundHelper.PlaySound(SoundHelper.SoundType.Receive);
 
 		public override bool CanRightClick() =>
 			true;
