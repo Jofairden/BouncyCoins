@@ -7,12 +7,6 @@ using Terraria.UI;
 
 namespace TheDeconstructor
 {
-	internal class DeconPlayer : ModPlayer
-	{
-		public Vector2 DeconDist = Vector2.Zero;
-		public bool UsedQueerCube = false;
-	}
-
 	internal static class SoundHelper
 	{
 		internal static string[] Sounds =
