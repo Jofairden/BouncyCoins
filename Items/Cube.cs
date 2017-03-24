@@ -89,8 +89,7 @@ namespace TheDeconstructor.Items
 
 
 		public override bool CanRightClick() =>
-			State == CubeState.Sealed
-			|| item.type == mod.ItemType<QueerLunarCube>();
+			true;
 
 		public override void RightClick(Player player)
 		{
@@ -102,17 +101,18 @@ namespace TheDeconstructor.Items
 
 				if (State.Value == CubeState.Open)
 				{
-					if (isQueer
-						|| TheDeconstructor.instance.deconGUI.visible)
+					if (TheDeconstructor.instance.deconGUI.visible)
 					{
 						TheDeconstructor.instance.deconGUI.TryGetCube(true);
 						TheDeconstructor.instance.deconGUI.TryPutInCube(isQueer);
-						TheDeconstructor.instance.TryToggleGUI(true);
 					}
+					else // Prevent consume
+						item.stack = 2;
 				}
 				else if (State.Value == CubeState.Sealed)
 				{
-					if (SealedItems != null && SealedItems.Count >= 1)
+					if (SealedItems != null
+						&& SealedItems.Count >= 1)
 					{
 						// Need to figure out a way how to reset weapon prefixes
 						SoundHelper.PlaySound(SoundHelper.SoundType.Redeem);
@@ -176,7 +176,7 @@ namespace TheDeconstructor.Items
 
 		public virtual void NotifyLoss(int type, int stack)
 		{
-			string str = $"[i/s1:{type}] (x{stack}) broke along with the cube's seal!";
+			string str = $"[i/s1:{type}] (x{stack}) was lost while unsealing!";
 			Main.NewText(str, 255);
 			if (Main.netMode == NetmodeID.MultiplayerClient)
 				NetMessage.SendData(MessageID.ChatText, -1, -1, str, 255);
@@ -252,6 +252,7 @@ namespace TheDeconstructor.Items
 				item.type == mod.ItemType<QueerLunarCube>()
 					? Utils.DiscoColor()
 					: drawColor;
+
 			if (InvFC++ >= 4)
 			{
 				InvF = (InvF + 1) % InvFMax;
