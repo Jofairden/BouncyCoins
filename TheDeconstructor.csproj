@@ -82,11 +82,6 @@
     <Content Include="Items\item.png" />
     <Content Include="Items\LunarCube.png" />
     <Content Include="Items\LunarCubeFrames.png" />
-    <Content Include="Items\Prism.gif" />
-    <Content Include="Items\QueerLunarCube.gif" />
-    <Content Include="Items\QueerLunarCube.png" />
-    <Content Include="Items\QueerLunarCubeFrames.png" />
-    <Content Include="Items\CubeHint.png" />
     <Content Include="Sounds\Custom\CloseUI.wav" />
     <Content Include="Sounds\Custom\Decline.wav" />
     <Content Include="Sounds\Custom\Notif.wav" />

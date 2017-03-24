@@ -17,6 +17,7 @@ namespace TheDeconstructor
 	internal class DeconstructorGUI : UIState
 	{
 		internal short[] tileData = new short[2];
+		internal bool hoveringChild = false;
 		internal bool visible = false;
 		internal bool dragging = false;
 		private Vector2 offset;
@@ -201,10 +202,7 @@ namespace TheDeconstructor
 		{
 			base.Update(gameTime);
 
-			// Do not close UI while Queer Cube is in
-			if ((!cubeItemPanel.item.IsAir
-				&& cubeItemPanel.item.modItem is QueerLunarCube)
-				|| tileData == null)
+			if (tileData == null)
 				return;
 
 			// Get tile entity from tile data (top left 0,0 frame of tile)
@@ -263,7 +261,7 @@ namespace TheDeconstructor
 				base.Append(recipeBag);
 
 				errorTime = 2;
-				errorText = new UIText("You do not have enough gold!");
+				errorText = new UIText("");
 				errorText.Width.Set(25f, 0f);
 				errorText.Height.Set(25f, 0f);
 				errorText.Top.Set(recipeBag.Top.Pixels + Main.fontMouseText.MeasureString(errorText.Text).Y / 2f, 0f);
