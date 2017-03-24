@@ -2,23 +2,24 @@
 
 	Rename
 		'Deconstructor' is now 'Lunar Deconstructor'
+		Goodie bag is gone, now 'Lunar Cube', upgraded version now 'Queer Lunar Cube'
 
 	New cubes!
 		Lunar Deconstructor no longer 'zips' into a goodie bag, instead uses a Lunar Cube as resource
-		'Queer Lunar' Cube is also available, which can be sealed and unsealed indefinitely (Lunar Cube is one time use)
-		Overhauled tooltips for cubes
+		'Queer Lunar' Cube is also available, which can be sealed and unsealed indefinitely (Lunar Cube is one time use, breaks upon unsealing)
+		The cubes also have a overhauled tooltips and tooltip ordering
 
 	UI
 		There's now a new slot (top slot) which will take an unsealed cube, contents will be sealed into this cube
 		The bottom slot is for the item you want to seal
 	
-	Code
+	Improvements
 		Massive improvements/reworks in code, check github
+		Vanilla 'flask' are now also seen as potions, and thus will have a failure rate in place.
 
 Todo:
 	
-	Make sure UI doesn't close when using Queer cube
-	Make sure UI takes Queer cube as input when opened by Queer cube
-	Make sure UI 'refunds' cube when one is in the panel
-	Have cube/source panels show a feint silhouette of which item is supposed to be in it (possibly along with helper tooltips)
+	Manage distance to tile using TE and GUI instance
+	Make sure UI can only be dragged when base panel is clicked
+	Have cube/source panels show a feint silhouette of which item is supposed to be in it (possibly along with helper tooltips) [PARTIALLY DONE]
 	Add recipes to craft cubes

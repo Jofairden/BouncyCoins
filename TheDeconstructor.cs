@@ -91,11 +91,18 @@ namespace TheDeconstructor
 			layers[insertLayer].Skip = insertLayer != -1 && deconGUI.IsMouseHovering;
 		}
 
-	    internal void TryToggleGUI()
-	    {
-            SoundHelper.PlaySound(!deconGUI.visible ? SoundHelper.SoundType.OpenUI : SoundHelper.SoundType.CloseUI);
-            deconGUI.visible = !deconGUI.visible;
-            deconGUI.ToggleUI(!deconGUI.visible);
+	    internal void TryToggleGUI(bool? state = null)
+	    {        
+		    bool visible =
+			    state ?? !deconGUI.visible;
+
+			SoundHelper.PlaySound(
+				visible 
+				? SoundHelper.SoundType.OpenUI 
+				: SoundHelper.SoundType.CloseUI);
+
+			deconGUI.visible = visible;
+            deconGUI.ToggleUI(visible);
         }
     }
 }

@@ -98,28 +98,24 @@ namespace TheDeconstructor.Items
             {
                 if (!State.HasValue) return;
                 int queerType = mod.ItemType<QueerLunarCube>();
+	            bool isQueer = item.type == queerType;
 
-                if (item.type == queerType 
-                    && State.Value == CubeState.Open)
+				if (State.Value == CubeState.Open)
                 {
-                    item.stack = 2;
-                    TheDeconstructor.instance.TryToggleGUI();
-                }
+	                if (isQueer 
+						|| TheDeconstructor.instance.deconGUI.visible)
+	                {
+						TheDeconstructor.instance.deconGUI.TryGetCube(true);
+						TheDeconstructor.instance.deconGUI.TryPutInCube(isQueer);
+						TheDeconstructor.instance.TryToggleGUI(true);
+					}
+				}
                 else if (State.Value == CubeState.Sealed)
                 {
                     if (SealedItems != null && SealedItems.Count >= 1)
                     {
                         // Need to figure out a way how to reset weapon prefixes
                         SoundHelper.PlaySound(SoundHelper.SoundType.Redeem);
-                        if (item.type == queerType)
-                        {
-                            var modItem = item.modItem as Cube;
-                            modItem.State = CubeState.Open;
-                            modItem.SealedSource.TurnToAir();
-                            modItem.SealedItems.Clear();
-                            modItem.CanFail = false;
-                            item.value = 1;
-                        }
                         //Item giveItem = new Item();
                         foreach (var infoBagItem in SealedItems)
                         {
@@ -134,26 +130,40 @@ namespace TheDeconstructor.Items
                                 (int)Math.Floor((double)(infoBagItem.stack / (double)infoBagItem.maxStack)));
                             int useStack = stackDiff > 1 ? infoBagItem.maxStack : infoBagItem.stack;
                             int leftOver = stackDiff > 1 ? infoBagItem.stack - useStack * stackDiff : 0;
-                            for (int i = 0; i < stackDiff; i++)
+							var giveItem = infoBagItem.Clone();
+							for (int i = 0; i < stackDiff; i++)
                             {
                                 if (CanFail && Main.rand.NextFloat() <= 0.2f)
                                 {
                                     NotifyLoss(infoBagItem.type, useStack);
                                     continue;
                                 }
-                                player.QuickSpawnItem(infoBagItem.type, useStack);
+	                            giveItem.stack = useStack;
+								player.GetItem(Main.LocalPlayer.whoAmI, giveItem);
                             }
                             if (leftOver > 0)
                             {
                                 if (CanFail && Main.rand.NextFloat() <= 0.2f)
                                 {
-                                    NotifyLoss(infoBagItem.type, useStack);
+                                    NotifyLoss(infoBagItem.type, leftOver);
                                     continue;
                                 }
-                                player.QuickSpawnItem(infoBagItem.type, leftOver);
-                            }
+								giveItem.stack = leftOver;
+								player.GetItem(Main.LocalPlayer.whoAmI, giveItem);
+							}
                         }
-                    }
+						// Queer cube isn't lost upon unsealing
+						if (item.type == queerType)
+						{
+							item.stack = 2;
+							var modItem = item.modItem as Cube;
+							modItem.State = CubeState.Open;
+							modItem.SealedSource.TurnToAir();
+							modItem.SealedItems.Clear();
+							modItem.CanFail = false;
+							item.value = 1;
+						}
+					}
                     //item.ResetStats(item.type);
                     //info = new BagItemInfo();
                 }
@@ -182,14 +192,14 @@ namespace TheDeconstructor.Items
 
             // Tooltip
             tooltips.Add(State == CubeState.Sealed
-                 ? new TooltipLine(mod, $"{mod.Name}: LunarCube: Title", "Sealed") { overrideColor = Color.Yellow }
+                 ? new TooltipLine(mod, $"{mod.Name}: LunarCube: Title", "Sealed\nRight click to break seal") { overrideColor = Color.Yellow }
                  : new TooltipLine(mod, $"{mod.Name}: LunarCube: Title", "Unsealed") { overrideColor = Color.Yellow });
 
             // Loss warning
             if (CanFail)
             {
                 var tt = new TooltipLine(mod, $"{mod.Name}: LunarCube: Loss Warning",
-                    $"Chance of content loss")
+                    $"Contents might not survive seal destruction")
                 { overrideColor = Colors.RarityRed };
                 tooltips.Add(tt);
             }
@@ -238,12 +248,16 @@ namespace TheDeconstructor.Items
         public virtual bool CubeDrawInventory(SpriteBatch spriteBatch, Vector2 position, Rectangle frame,
             Color drawColor, Color itemColor, Vector2 origin, float scale)
         {
+	        Color useColor =
+		        item.type == mod.ItemType<QueerLunarCube>()
+			        ? Utils.DiscoColor()
+			        : drawColor;
             if (InvFC++ >= 4)
             {
                 InvF = (InvF + 1) % InvFMax;
                 InvFC = 0;
             }
-            spriteBatch.Draw(animTexture, position, new Rectangle(0, item.height * InvF, item.width, item.height), drawColor, 0f, origin, scale, SpriteEffects.None, 0f);
+            spriteBatch.Draw(animTexture, position, new Rectangle(0, item.height * InvF, item.width, item.height), useColor, 0f, origin, scale, SpriteEffects.None, 0f);
             return false;
         }
 
@@ -254,13 +268,17 @@ namespace TheDeconstructor.Items
         public virtual bool CubeDrawInWorld(SpriteBatch spriteBatch, Color lightColor, Color alphaColor,
             ref float rotation, ref float scale, int whoAmI)
         {
-            Main.itemFrameCounter[whoAmI]++;
+	        Color useColor =
+		        item.type == mod.ItemType<QueerLunarCube>()
+			        ? Utils.DiscoColor()
+			        : lightColor;
+			Main.itemFrameCounter[whoAmI]++;
             if (Main.itemFrameCounter[whoAmI] >= 4)
             {
                 Main.itemFrame[whoAmI] = (Main.itemFrame[whoAmI] + 1) % InvFMax;
                 Main.itemFrameCounter[whoAmI] = 0;
             }
-            spriteBatch.Draw(animTexture, item.position - Main.screenPosition, new Rectangle(0, item.height * Main.itemFrame[whoAmI], item.width, item.height), lightColor, 0f, new Vector2(item.width / 2f, item.height / 2f), scale, SpriteEffects.None, 0f);
+            spriteBatch.Draw(animTexture, item.position - Main.screenPosition, new Rectangle(0, item.height * Main.itemFrame[whoAmI], item.width, item.height), useColor, 0f, new Vector2(item.width / 2f, item.height / 2f), scale, SpriteEffects.None, 0f);
             return false;
         }
 
@@ -270,10 +288,14 @@ namespace TheDeconstructor.Items
 
         public override void PostUpdate()
         {
-            var sine = (float)Math.Sin(Main.essScale * 0.50f);
-            var r = 0.05f + 0.35f * sine;
-            var g = 0.05f + 0.35f * sine;
-            var b = 0.05f + 0.35f * sine;
+			Color useColor =
+			   item.type == mod.ItemType<QueerLunarCube>()
+				   ? Utils.DiscoColor()
+				   : Color.White;
+			var sine = (float)Math.Sin(Main.essScale * 0.50f);
+            var r = 0.05f + 0.35f * sine * useColor.R * 0.01f;
+            var g = 0.05f + 0.35f * sine * useColor.G * 0.01f;
+            var b = 0.05f + 0.35f * sine * useColor.B * 0.01f;
             Lighting.AddLight(item.Center, new Vector3(r, g, b));
         }
     }

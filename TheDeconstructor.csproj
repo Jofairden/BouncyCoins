@@ -75,18 +75,32 @@
   <ItemGroup>
     <Content Include="build.txt" />
     <Content Include="changelog.txt" />
+    <Content Include="closeButton.png" />
+    <Content Include="DeconstructBagItem.png" />
     <Content Include="description.txt" />
     <Content Include="Items\Deconstructor.png" />
+    <Content Include="Items\item.png" />
     <Content Include="Items\LunarCube.png" />
     <Content Include="Items\LunarCubeFrames.png" />
+    <Content Include="Items\Prism.gif" />
+    <Content Include="Items\QueerLunarCube.gif" />
     <Content Include="Items\QueerLunarCube.png" />
     <Content Include="Items\QueerLunarCubeFrames.png" />
+    <Content Include="Items\CubeHint.png" />
     <Content Include="Sounds\Custom\CloseUI.wav" />
     <Content Include="Sounds\Custom\Decline.wav" />
     <Content Include="Sounds\Custom\Notif.wav" />
     <Content Include="Sounds\Custom\OpenUI.wav" />
     <Content Include="Sounds\Custom\Receive.wav" />
     <Content Include="Sounds\Custom\Redeem.wav" />
+    <Content Include="Tiles\Deconstructor.png" />
+    <Content Include="Tiles\DeconstructorOld.png" />
+    <Content Include="Tiles\Lonely.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include=".travis.yml" />
+    <None Include="LICENSE" />
+    <None Include="README.md" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
