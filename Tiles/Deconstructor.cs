@@ -14,6 +14,7 @@ namespace TheDeconstructor.Tiles
 	internal sealed class DeconstructorTE : ModTileEntity
 	{
 		public int frame = 0;
+		public int waitTime = 0;
 		public Vector2 DistanceToLocalPlayer = Vector2.Zero;
 
 		public override bool ValidTile(int i, int j)
@@ -31,6 +32,12 @@ namespace TheDeconstructor.Tiles
 			DistanceToLocalPlayer =
 					new Vector2(Position.X, Position.Y) * 16f -
 					Main.LocalPlayer.position;
+
+			if (waitTime++ >= 4)
+			{
+				frame = (frame + 1) % 7;
+				waitTime = 0;
+			}
 		}
 
 		public override int Hook_AfterPlacement(int i, int j, int type, int style, int direction)
@@ -67,17 +74,16 @@ namespace TheDeconstructor.Tiles
 			TileObjectData.newTile.CoordinatePadding = p;
 			TileObjectData.newTile.CoordinateHeights = new int[] { w, w, w };
 			TileObjectData.newTile.HookPostPlaceMyPlayer = new PlacementHook(mod.GetTileEntity("DeconstructorTE").Hook_AfterPlacement, -1, 0, false);
+			TileObjectData.newTile.DrawYOffset = 2;
 			TileObjectData.addTile(Type);
 
-			AddMapEntry(new Color(50, 50, 50), "Deconstructor");
+			AddMapEntry(new Color(50, 50, 50), "Lunar Deconstructor");
 
-			//animationFrameHeight = 54;
 			disableSmartCursor = true;
 		}
 
 		public override void RightClick(int i, int j)
 		{
-			//Main.NewTextMultiline(Main.LocalPlayer.GetModPlayer<DeconPlayer>(mod).DeconDist.ToString());
 			Tile tile = Main.tile[i, j];
 			if (tile.type == Type)
 			{
@@ -87,28 +93,6 @@ namespace TheDeconstructor.Tiles
 				TheDeconstructor.instance.deconGUI.tileData = new short[] { (short)x, (short)y };
 				TheDeconstructor.instance.TryToggleGUI();
 			}
-		}
-
-		//public override void AnimateTile(ref int frame, ref int frameCounter)
-		//{
-		//	frameCounter++;
-		//	if (frameCounter >= 4)
-		//	{
-		//		frame = (frame + 1) % 8;
-		//		frameCounter = 0;
-		//	}
-		//}
-
-		public override bool PreDraw(int i, int j, SpriteBatch spriteBatch)
-		{
-			Tile tile = Main.tile[i, j];
-			if (tile.type == Type
-				&& tile.IsTopLeftFrame())
-			{
-				var te = (TileEntity.ByPosition[new Point16(i, j)] as DeconstructorTE);
-				te.frame = (te.frame + 1) % 8;
-			}
-			return true;
 		}
 
 		public override void ModifyLight(int i, int j, ref float r, ref float g, ref float b)
@@ -149,7 +133,8 @@ namespace TheDeconstructor.Tiles
 		{
 			var tile = Main.tile[i, j];
 			// Only draw from top left tile
-			if (tile.IsTopLeftFrame())
+			if (tile.type == Type
+				&& tile.IsTopLeftFrame())
 			{
 				var TE = TileEntity.ByPosition[new Point16(i, j)] as DeconstructorTE;
 				var inst = TheDeconstructor.instance;
@@ -168,7 +153,7 @@ namespace TheDeconstructor.Tiles
 						? Vector2.Zero
 						: new Vector2(Main.offScreenRange, Main.offScreenRange);
 
-					Texture2D animTexture = mod.GetTexture("Items/LunarCubeFrames");
+					Texture2D animTexture = mod.GetTexture("Items/LunarCube");
 					const int frameWidth = 20;
 					const int frameHeight = 28;
 					Vector2 offset = new Vector2(36f, 8f); // offset 2.5 tiles horizontal, 0.5 tile vertical
@@ -178,6 +163,7 @@ namespace TheDeconstructor.Tiles
 					spriteBatch.Draw(animTexture, position + zero,
 						new Rectangle(0, frameHeight * TE.frame, frameWidth, frameHeight), useColor, 0f, origin, 1f,
 						SpriteEffects.None, 0f);
+
 				}
 			}
 		}

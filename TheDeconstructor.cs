@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using Terraria;
 using Terraria.DataStructures;
 using Terraria.ModLoader;
@@ -41,6 +42,7 @@ namespace TheDeconstructor
 		internal UserInterface deconUI;
 		internal DeconstructorGUI deconGUI;
 		internal static TheDeconstructor instance;
+		internal static Texture2D DogeTexture;
 
 		public TheDeconstructor()
 		{
@@ -54,6 +56,8 @@ namespace TheDeconstructor
 		public override void Load()
 		{
 			instance = this as TheDeconstructor;
+			DogeTexture = GetTexture("EmptyDoge");
+			DogeTexture.MultiplyColorsByAlpha();
 
 			if (Main.dedServ) return;
 

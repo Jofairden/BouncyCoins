@@ -4,6 +4,7 @@ using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Terraria;
+using Terraria.DataStructures;
 using Terraria.ID;
 using Terraria.ModLoader;
 using Terraria.ModLoader.IO;
@@ -13,14 +14,9 @@ namespace TheDeconstructor.Items
 {
 	internal abstract class Cube : ModItem
 	{
-		private Texture2D animTexture => TheDeconstructor.instance.GetTexture(TexturePath);
 		internal Item SealedSource { get; set; } = new Item();
 		internal List<Item> SealedItems { get; set; } = new List<Item>();
-		internal abstract string TexturePath { get; }
 		internal bool CanFail { get; set; }
-		internal int InvFC { get; set; }
-		internal int InvF { get; set; }
-		internal abstract int InvFMax { get; }
 		internal CubeState? State { get; set; } = CubeState.Open;
 
 		public enum CubeState
@@ -38,9 +34,14 @@ namespace TheDeconstructor.Items
 			item.rare = 9;
 			item.maxStack = 1;
 			item.value = 1;
-			item.width = 10;
-			item.height = 10;
+			item.width = 20;
+			item.height = 28;
 			ItemID.Sets.ItemNoGravity[item.type] = true;
+		}
+
+		public override DrawAnimation GetAnimation()
+		{
+			return new DrawAnimationVertical(4, 8);
 		}
 
 		public virtual TagCompound CubeSave()
@@ -69,19 +70,12 @@ namespace TheDeconstructor.Items
 
 		public virtual void CubeLoad(TagCompound tag)
 		{
-			try
-			{
 				var list = tag.GetList<TagCompound>("SealedItems").ToList();
 				list.ForEach(x => SealedItems.Add(ItemIO.Load(x)));
 				SealedSource = ItemIO.Load(tag.GetCompound("SealedSource"));
 				CanFail = tag.GetBool("CanFail");
 				State = (CubeState)tag.GetInt("State");
 				item.value = tag.GetInt("Value");
-			}
-			catch (Exception e)
-			{
-				ErrorLogger.Log(e.ToString());
-			}
 		}
 
 		public override void Load(TagCompound tag) =>
@@ -95,8 +89,6 @@ namespace TheDeconstructor.Items
 
 		public override void RightClick(Player player)
 		{
-			try
-			{
 				if (!State.HasValue) return;
 				bool isQueer = item.modItem is QueerLunarCube;
 
@@ -173,11 +165,6 @@ namespace TheDeconstructor.Items
 					//item.ResetStats(item.type);
 					//info = new BagItemInfo();
 				}
-			}
-			catch (Exception e)
-			{
-				Main.NewTextMultiline(e.ToString());
-			}
 		}
 
 		public virtual void NotifyLoss(int type, int stack)
@@ -250,48 +237,6 @@ namespace TheDeconstructor.Items
 			};
 			return clone;
 		}
-
-		public virtual bool CubeDrawInventory(SpriteBatch spriteBatch, Vector2 position, Rectangle frame,
-			Color drawColor, Color itemColor, Vector2 origin, float scale)
-		{
-			Color useColor =
-				item.type == mod.ItemType<QueerLunarCube>()
-					? Tools.DiscoColor()
-					: drawColor;
-
-			if (InvFC++ >= 4)
-			{
-				InvF = (InvF + 1) % InvFMax;
-				InvFC = 0;
-			}
-			spriteBatch.Draw(animTexture, position, new Rectangle(0, item.height * InvF, item.width, item.height), useColor, 0f, origin, scale, SpriteEffects.None, 0f);
-			return false;
-		}
-
-		public override bool PreDrawInInventory(SpriteBatch spriteBatch, Vector2 position, Rectangle frame,
-			Color drawColor, Color itemColor, Vector2 origin, float scale)
-			=> CubeDrawInventory(spriteBatch, position, frame, drawColor, itemColor, origin, scale);
-
-		public virtual bool CubeDrawInWorld(SpriteBatch spriteBatch, Color lightColor, Color alphaColor,
-			ref float rotation, ref float scale, int whoAmI)
-		{
-			Color useColor =
-				item.type == mod.ItemType<QueerLunarCube>()
-					? Tools.DiscoColor()
-					: lightColor;
-			Main.itemFrameCounter[whoAmI]++;
-			if (Main.itemFrameCounter[whoAmI] >= 4)
-			{
-				Main.itemFrame[whoAmI] = (Main.itemFrame[whoAmI] + 1) % InvFMax;
-				Main.itemFrameCounter[whoAmI] = 0;
-			}
-			spriteBatch.Draw(animTexture, item.position - Main.screenPosition, new Rectangle(0, item.height * Main.itemFrame[whoAmI], item.width, item.height), useColor, 0f, new Vector2(item.width / 2f, item.height / 2f), scale, SpriteEffects.None, 0f);
-			return false;
-		}
-
-		public override bool PreDrawInWorld(SpriteBatch spriteBatch, Color lightColor, Color alphaColor,
-			ref float rotation, ref float scale, int whoAmI) =>
-			CubeDrawInWorld(spriteBatch, lightColor, alphaColor, ref rotation, ref scale, whoAmI);
 
 		public override void PostUpdate()
 		{

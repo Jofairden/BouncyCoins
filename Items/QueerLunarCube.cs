@@ -21,19 +21,18 @@ namespace TheDeconstructor.Items
 		{
 			base.SetDefaults();
 			item.name = "Queer Lunar Cube";
-			item.width = 20;
-			item.height = 28;
 			item.rare = 10;
 		}
 
 		public override ModItem Clone()
 			 => CubeClone<QueerLunarCube>() as ModItem;
 
-		internal override string TexturePath =>
-			"Items/LunarCubeFrames";
-
-		internal override int InvFMax =>
-			7;
+		public override Color? GetAlpha(Color lightColor)
+		{
+			var c = Tools.DiscoColor();
+			c.A = lightColor.A;
+			return c;
+		}
 
 		public override void AddRecipes()
 		{
