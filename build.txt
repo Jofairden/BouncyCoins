@@ -5,6 +5,6 @@ homepage = https://forums.terraria.org/index.php?threads/.55904/
 hideCode = true
 hideResources = true
 includeSource = false
-buildIgnore = *.csproj, *.user, obj\*, bin\*, .vs\*, Media\*, *\*.psd, .git\*, *.sln, *.csproj, Properties\*, README.md, LICENSE, .gitignore, .travis.yml
+buildIgnore = *.csproj, *.user, obj\*, bin\*, .vs\*, Media\*, *\*.psd, .git\*, *.sln, *.csproj, Properties\*, README.md, LICENSE, .gitignore, .travis.yml, changelog.txt
 includePDB = true
 languageVersion = 6

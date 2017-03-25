@@ -1,11 +1,57 @@
-﻿Adds a special animated tile to the game which opens a custom UI on right click.
-Players can put any item into the slot and view all recipes available for the item.
-The item can then be magically deconstructed, for a price.
+﻿Changelogs below
+See homepage for more detailed info
 
-Station is crafted with:
--10 of each lunar fragment (solar, vortex, nebula, stardust)
--10 lunar bars
-At the Ancient Manipulator
+Lunar Deconstructor is crafted with 10 lunar fragments of each type and 10 lunar bars at the Ancient Manipulator.
+On right clicking, the deconstruction UI opens. You can put in an unsealed lunar cube and an item to search for recipes.
+Then, you can choose which recipe you want to seal in the cube, for a price.
+Cubes can be unsealed with a right click, traded with players, works in multiplayer.
+Some items have failure rate in place, such as potions, flasks and lunar fragments. This is to avoid exploiting.
 
-There's a failure rate in place when deconstructing potions (chance to lose some materials when opening goodie bag)
+You can craft a Lunar Cube at the Lunar Deconstructor with 1 of any Lunar Fragment and 1 Lunar Bar.
+A 'Queer' Lunar Cube is crafted with 1 Lunar Cube and 1 of any Lunar Fragment at the Lunar Deconstructor.
+A Queer Lunar Cube can be sealed and unsealed without being destroyed, a Lunar Cube can be unsealed once before being destroyed.
+Queer Lunar Cubes are recognizable by their morphing colors.
+
+The Lunar Deconstructor will show which cube is currently being handled (when one is put into the UI that is)
 Mod comes with fitting sound effects.
+
+Changelog from 0.1.1 to 0.2
+
+	General
+		'Deconstructor' renamed to 'Lunar Deconstructor'
+		Goodie bag is gone, now 'Lunar Cube', upgraded version is 'Queer Lunar Cube'.
+		You can craft a Lunar Cube at the Lunar Deconstructor with 1 of any Lunar Fragment and 1 Lunar Bar.
+		A 'Queer' Lunar Cube is crafted with 1 Lunar Cube and 1 of any Lunar Fragment at the Lunar Deconstructor.
+		A Queer Lunar Cube can be sealed and unsealed without being destroyed, a Lunar Cube can be unsealed once before being destroyed.
+		Queer Lunar Cubes are recognizable by their morphing colors.
+		The cubes also have a overhauled tooltips and tooltip ordering (compared to the old goodie bag)
+		While deconstruction UI is open, rightclicking a cube will not unseal it to prevent accidental openings.
+
+	UI Changes
+		There's now a new slot (top slot) which will take an unsealed cube, contents will be sealed into this cube
+		The bottom slot is for the item you want to seal
+		UI will now show reddit's 'Wow, such empty' doge when the list is empty, because the initial preview was posted on reddit
+		UI item slots now supports ModItem Pre/Post DrawInInventory, along with a 'breathing' effect (such as lunar fragments)
+		UI item slots stack drawing improved: now draws with black border (FourWay)
+
+	Bugfixes
+		Fixed several bugs, including but not limited to:
+			1) Not receiving items when UI is forcefully closed
+			2) Distance from tile to player not being managed properly
+				This is fixed by shifting the logic completely to a TileEntity
+			3) Right click not functioning properly on UI ItemSlots
+				This includes loss of ItemInfos
+
+	Sprite improvements
+		Tile sprite was improved.
+		Cube sprite was improved.
+		Both cubes share the same sprite, but the Queer version morphs colors.
+	
+	Other
+		Massive improvements/reworks in code, check github
+		Vanilla 'flask' are now also seen as potions, and thus will have a failure rate in place.
+		By changing the code to use ItemRarity.GetColor, the rarity for level 4 should now be properly displayed
+		Added 2 more 'errors' in UI:
+			1) When trying to seal an already sealed cube
+			2) When trying to seal with no cube in the UI
+		UI slots now show a faded texture along with a helper tooltip to help players figure out what they're for
