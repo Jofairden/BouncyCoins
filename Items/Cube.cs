@@ -3,13 +3,11 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
 using Terraria;
 using Terraria.DataStructures;
 using Terraria.ID;
 using Terraria.ModLoader;
 using Terraria.ModLoader.IO;
-
 
 namespace TheDeconstructor.Items
 {
@@ -49,7 +47,7 @@ namespace TheDeconstructor.Items
 				SealedItems.Add(reader.ReadItem(true).Clone());
 			}
 			CanFail = reader.ReadBoolean();
-			State = (CubeState) reader.ReadVarInt();
+			State = (CubeState)reader.ReadVarInt();
 		}
 
 		public override bool CloneNewInstances =>
@@ -73,23 +71,15 @@ namespace TheDeconstructor.Items
 
 		public virtual TagCompound CubeSave()
 		{
-			try
+			var tc = new TagCompound
 			{
-				var tc = new TagCompound
-				{
-					["SealedItems"] = SealedItems.Select(ItemIO.Save).ToList(),
-					["SealedSource"] = ItemIO.Save(SealedSource),
-					["CanFail"] = CanFail,
-					["State"] = (int?)State ?? 0,
-					["Value"] = item.value
-				};
-				return tc;
-			}
-			catch (Exception e)
-			{
-				ErrorLogger.Log(e.ToString());
-			}
-			return null;
+				["SealedItems"] = SealedItems.Select(ItemIO.Save).ToList(),
+				["SealedSource"] = ItemIO.Save(SealedSource),
+				["CanFail"] = CanFail,
+				["State"] = (int?)State ?? 0,
+				["Value"] = item.value
+			};
+			return tc;
 		}
 
 		public override TagCompound Save() =>
@@ -97,12 +87,12 @@ namespace TheDeconstructor.Items
 
 		public virtual void CubeLoad(TagCompound tag)
 		{
-				var list = tag.GetList<TagCompound>("SealedItems").ToList();
-				list.ForEach(x => SealedItems.Add(ItemIO.Load(x)));
-				SealedSource = ItemIO.Load(tag.GetCompound("SealedSource"));
-				CanFail = tag.GetBool("CanFail");
-				State = (CubeState)tag.GetInt("State");
-				item.value = tag.GetInt("Value");
+			var list = tag.GetList<TagCompound>("SealedItems").ToList();
+			list.ForEach(x => SealedItems.Add(ItemIO.Load(x)));
+			SealedSource = ItemIO.Load(tag.GetCompound("SealedSource"));
+			CanFail = tag.GetBool("CanFail");
+			State = (CubeState)tag.GetInt("State");
+			item.value = tag.GetInt("Value");
 		}
 
 		public override void Load(TagCompound tag) =>
@@ -116,82 +106,82 @@ namespace TheDeconstructor.Items
 
 		public override void RightClick(Player player)
 		{
-				if (!State.HasValue) return;
-				bool isQueer = item.modItem is QueerLunarCube;
+			if (!State.HasValue) return;
+			bool isQueer = item.modItem is QueerLunarCube;
 
-				if (State.Value == CubeState.Open)
+			if (State.Value == CubeState.Open)
+			{
+				if (TheDeconstructor.instance.deconGUI.visible)
 				{
-					if (TheDeconstructor.instance.deconGUI.visible)
-					{
-						TheDeconstructor.instance.deconGUI.TryGetCube(true);
-						TheDeconstructor.instance.deconGUI.TryPutInCube(isQueer);
-					}
-					else // Prevent consume
-						item.stack = 2;
+					TheDeconstructor.instance.deconGUI.TryGetCube(true);
+					TheDeconstructor.instance.deconGUI.TryPutInCube(isQueer);
 				}
-				else if (State.Value == CubeState.Sealed)
+				else // Prevent consume
+					item.stack = 2;
+			}
+			else if (State.Value == CubeState.Sealed)
+			{
+				if (TheDeconstructor.instance.deconGUI.visible)
 				{
-					if (TheDeconstructor.instance.deconGUI.visible)
+					item.stack = 2;
+					return;
+				}
+				if (SealedItems != null
+					&& SealedItems.Count >= 1)
+				{
+					// Need to figure out a way how to reset weapon prefixes
+					SoundHelper.PlaySound(SoundHelper.SoundType.Redeem);
+					//Item giveItem = new Item();
+					foreach (var infoBagItem in SealedItems)
 					{
-						item.stack = 2;
-						return;
-					}
-					if (SealedItems != null
-						&& SealedItems.Count >= 1)
-					{
-						// Need to figure out a way how to reset weapon prefixes
-						SoundHelper.PlaySound(SoundHelper.SoundType.Redeem);
-						//Item giveItem = new Item();
-						foreach (var infoBagItem in SealedItems)
-						{
-							if (infoBagItem.type == 0) break;
-							//giveItem.SetDefaults(infoBagItem.type);
-							//var givenItem = player.GetItem(player.whoAmI, giveItem);
-							//givenItem.Prefix(0);
+						if (infoBagItem.type == 0) break;
+						//giveItem.SetDefaults(infoBagItem.type);
+						//var givenItem = player.GetItem(player.whoAmI, giveItem);
+						//givenItem.Prefix(0);
 
-							//the UI can add materials beyond their maxStack.
-							//so this should ensure items are given in multiple stacks if they exceed their maxStack
-							int stackDiff = Math.Max(1,
-								(int)Math.Floor((double)(infoBagItem.stack / (double)infoBagItem.maxStack)));
-							int useStack = stackDiff > 1 ? infoBagItem.maxStack : infoBagItem.stack;
-							int leftOver = stackDiff > 1 ? infoBagItem.stack - useStack * stackDiff : 0;
-							var giveItem = infoBagItem.Clone();
-							for (int i = 0; i < stackDiff; i++)
-							{
-								if (CanFail && Main.rand.NextFloat() <= 0.2f)
-								{
-									NotifyLoss(infoBagItem.type, useStack);
-									continue;
-								}
-								giveItem.stack = useStack;
-								player.GetItem(Main.LocalPlayer.whoAmI, giveItem);
-							}
-							if (leftOver > 0)
-							{
-								if (CanFail && Main.rand.NextFloat() <= 0.2f)
-								{
-									NotifyLoss(infoBagItem.type, leftOver);
-									continue;
-								}
-								giveItem.stack = leftOver;
-								player.GetItem(Main.LocalPlayer.whoAmI, giveItem);
-							}
-						}
-						// Queer cube isn't lost upon unsealing
-						if (isQueer)
+						//the UI can add materials beyond their maxStack.
+						//so this should ensure items are given in multiple stacks if they exceed their maxStack
+						int stackDiff = Math.Max(1,
+							(int)Math.Floor((double)(infoBagItem.stack / (double)infoBagItem.maxStack)));
+						int useStack = stackDiff > 1 ? infoBagItem.maxStack : infoBagItem.stack;
+						int leftOver = stackDiff > 1 ? infoBagItem.stack - useStack * stackDiff : 0;
+						var giveItem = infoBagItem.Clone();
+						for (int i = 0; i < stackDiff; i++)
 						{
-							item.stack = 2;
-							var modItem = item.modItem as Cube;
-							modItem.State = CubeState.Open;
-							modItem.SealedSource.TurnToAir();
-							modItem.SealedItems.Clear();
-							modItem.CanFail = false;
-							item.value = 1;
+							if (CanFail && Main.rand.NextFloat() <= 0.2f)
+							{
+								NotifyLoss(infoBagItem.type, useStack);
+								continue;
+							}
+							giveItem.stack = useStack;
+							player.GetItem(Main.LocalPlayer.whoAmI, giveItem);
+						}
+						if (leftOver > 0)
+						{
+							if (CanFail && Main.rand.NextFloat() <= 0.2f)
+							{
+								NotifyLoss(infoBagItem.type, leftOver);
+								continue;
+							}
+							giveItem.stack = leftOver;
+							player.GetItem(Main.LocalPlayer.whoAmI, giveItem);
 						}
 					}
-					//item.ResetStats(item.type);
-					//info = new BagItemInfo();
+					// Queer cube isn't lost upon unsealing
+					if (isQueer)
+					{
+						item.stack = 2;
+						var modItem = item.modItem as Cube;
+						modItem.State = CubeState.Open;
+						modItem.SealedSource.TurnToAir();
+						modItem.SealedItems.Clear();
+						modItem.CanFail = false;
+						item.value = 1;
+					}
 				}
+				//item.ResetStats(item.type);
+				//info = new BagItemInfo();
+			}
 		}
 
 		public virtual void NotifyLoss(int type, int stack)
