@@ -55,11 +55,10 @@ namespace TheDeconstructor
 		public override void Load()
 		{
 			instance = this as TheDeconstructor;
-			DogeTexture = GetTexture("EmptyDoge");
-			DogeTexture.MultiplyColorsByAlpha();
 
 			if (Main.dedServ) return;
-
+			DogeTexture = GetTexture("EmptyDoge");
+			DogeTexture.MultiplyColorsByAlpha();
 			deconUI = new UserInterface();
 			deconGUI = new DeconstructorGUI();
 			deconGUI.Activate();

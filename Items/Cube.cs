@@ -154,7 +154,8 @@ namespace TheDeconstructor.Items
 								continue;
 							}
 							giveItem.stack = useStack;
-							player.GetItem(Main.LocalPlayer.whoAmI, giveItem);
+							Main.LocalPlayer.GiveClonedItem(giveItem, useStack);
+							//player.GetItem(Main.LocalPlayer.whoAmI, giveItem);
 						}
 						if (leftOver > 0)
 						{
@@ -164,7 +165,8 @@ namespace TheDeconstructor.Items
 								continue;
 							}
 							giveItem.stack = leftOver;
-							player.GetItem(Main.LocalPlayer.whoAmI, giveItem);
+							Main.LocalPlayer.GiveClonedItem(giveItem, leftOver);
+							//player.GetItem(Main.LocalPlayer.whoAmI, giveItem);
 						}
 					}
 					// Queer cube isn't lost upon unsealing

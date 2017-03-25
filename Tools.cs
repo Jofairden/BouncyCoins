@@ -9,6 +9,20 @@ namespace TheDeconstructor
 {
 	public static class Tools
 	{
+		public static int GiveClonedItem(this Player player, Item item, int stack)
+		{
+			int index = Item.NewItem((int)player.position.X, (int)player.position.Y, player.width, player.height, item.type, stack, false, -1, false, false);
+			Main.item[index] = item.Clone();
+			Main.item[index].position = player.position;
+			Main.item[index].whoAmI = index;
+
+			if (Main.netMode == NetmodeID.MultiplayerClient)
+			{
+				NetMessage.SendData(21, -1, -1, "", index, 1f, 0f, 0f, 0, 0, 0);
+			}
+			return index;
+		}
+
 		public static void MultiplyColorsByAlpha(this Texture2D texture)
 		{
 			Color[] data = new Color[texture.Width * texture.Height];

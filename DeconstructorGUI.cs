@@ -169,8 +169,9 @@ namespace TheDeconstructor
 		{
 			if (!sourceItemPanel.item.IsAir && (!visible || force))
 			{
-				Main.LocalPlayer.GetItem(Main.myPlayer, sourceItemPanel.item.Clone()); // does not seem to generate item text
-																					   //Main.LocalPlayer.QuickSpawnItem(sourceItemPanel.item.type, sourceItemPanel.item.stack);
+				Main.LocalPlayer.GiveClonedItem(sourceItemPanel.item, sourceItemPanel.item.stack);
+				//Main.LocalPlayer.GetItem(Main.myPlayer, sourceItemPanel.item.Clone()); // does not seem to generate item text
+				//Main.LocalPlayer.QuickSpawnItem(sourceItemPanel.item.type, sourceItemPanel.item.stack);
 				sourceItemPanel.item.TurnToAir();
 			}
 		}
@@ -180,7 +181,8 @@ namespace TheDeconstructor
 			if (!cubeItemPanel.item.IsAir
 				&& (!visible || force))
 			{
-				Main.LocalPlayer.GetItem(Main.myPlayer, cubeItemPanel.item.Clone());
+				Main.LocalPlayer.GiveClonedItem(cubeItemPanel.item, cubeItemPanel.item.stack);
+				//Main.LocalPlayer.GetItem(Main.myPlayer, cubeItemPanel.item.Clone());
 				//Main.LocalPlayer.QuickSpawnItem(sourceItemPanel.item.type, sourceItemPanel.item.stack);
 				cubeItemPanel.item.TurnToAir();
 			}
@@ -620,7 +622,7 @@ namespace TheDeconstructor
 							: texture2D.Frame(1, 1, 0, 0);
 
 				float drawScale = 1f;
-				if ((float)frame.Width > innerDimensions.Width 
+				if ((float)frame.Width > innerDimensions.Width
 					|| (float)frame.Height > innerDimensions.Width)
 				{
 					if (frame.Width > frame.Height)
