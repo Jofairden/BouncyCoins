@@ -299,6 +299,7 @@ namespace TheDeconstructor
 						var recipePanel = (Parent as UIRecipePanel);
 						var guiInst = TheDeconstructor.instance.deconGUI;
 						var items = new List<Item>();
+						guiInst.dragging = false;
 
 						if (guiInst.cubeItemPanel.item.IsAir)
 						{
@@ -347,9 +348,7 @@ namespace TheDeconstructor
 						if (guiInst.sourceItemPanel.item.stack <= 0)
 							guiInst.sourceItemPanel.item.TurnToAir();
 
-						// Clear recipe list, reset dragging, otherwise UI starts draggin
-						guiInst.recipeList?.Clear();
-						guiInst.dragging = false;
+						guiInst.sourceItemPanel.DoUpdate();
 					}
 				};
 			}

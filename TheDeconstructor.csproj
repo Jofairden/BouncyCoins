@@ -73,11 +73,13 @@
     <Compile Include="Tools.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include=".gitignore" />
     <Content Include="build.txt" />
     <Content Include="changelog.txt" />
     <Content Include="closeButton.png" />
     <Content Include="DeconstructBagItem.png" />
     <Content Include="description.txt" />
+    <Content Include="EmptyDoge.png" />
     <Content Include="Items\CubeHint.png" />
     <Content Include="Items\Deconstructor.png" />
     <Content Include="Items\LunarCube.png" />
