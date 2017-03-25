@@ -9,6 +9,7 @@
 		Queer Lunar Cubes are recognizable by their morphing colors.
 		The cubes also have a overhauled tooltips and tooltip ordering (compared to the old goodie bag)
 		While deconstruction UI is open, rightclicking a cube will not unseal it to prevent accidental openings.
+		Item loss chance changed to 30% (from 20%)
 
 	UI Changes
 		There's now a new slot (top slot) which will take an unsealed cube, contents will be sealed into this cube

@@ -194,6 +194,10 @@ namespace TheDeconstructor
 				TryGetCube();
 				TryGetSource();
 			}
+			else
+			{
+				sourceItemPanel.DoUpdate();
+			}
 		}
 
 		public override void Update(GameTime gameTime)

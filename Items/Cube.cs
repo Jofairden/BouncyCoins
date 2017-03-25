@@ -148,7 +148,7 @@ namespace TheDeconstructor.Items
 						var giveItem = infoBagItem.Clone();
 						for (int i = 0; i < stackDiff; i++)
 						{
-							if (CanFail && Main.rand.NextFloat() <= 0.2f)
+							if (CanFail && Main.rand.NextFloat() <= 0.3f)
 							{
 								NotifyLoss(infoBagItem.type, useStack);
 								continue;
@@ -158,7 +158,7 @@ namespace TheDeconstructor.Items
 						}
 						if (leftOver > 0)
 						{
-							if (CanFail && Main.rand.NextFloat() <= 0.2f)
+							if (CanFail && Main.rand.NextFloat() <= 0.3f)
 							{
 								NotifyLoss(infoBagItem.type, leftOver);
 								continue;
@@ -209,7 +209,7 @@ namespace TheDeconstructor.Items
 			if (CanFail)
 			{
 				var tt = new TooltipLine(mod, $"{mod.Name}: LunarCube: Loss Warning",
-					$"Contents might not survive seal destruction")
+					$"30% chance of failure")
 				{ overrideColor = Colors.RarityRed };
 				tooltips.Add(tt);
 			}
