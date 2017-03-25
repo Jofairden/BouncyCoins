@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -23,6 +24,32 @@ namespace TheDeconstructor.Items
 		{
 			Sealed,
 			Open
+		}
+
+		// Sync infos for multiplayer
+		public override void NetSend(BinaryWriter writer)
+		{
+			writer.WriteItem(SealedSource, true);
+			writer.WriteVarInt(SealedItems.Count);
+			for (int i = 0; i < SealedItems.Count; i++)
+			{
+				writer.WriteItem(SealedItems[i], true);
+			}
+			writer.Write(CanFail);
+			writer.WriteVarInt((int)State);
+		}
+
+		public override void NetRecieve(BinaryReader reader)
+		{
+			SealedSource = reader.ReadItem(true).Clone();
+			int count = reader.ReadVarInt();
+			SealedItems = new List<Item>();
+			for (int i = 0; i < count; i++)
+			{
+				SealedItems.Add(reader.ReadItem(true).Clone());
+			}
+			CanFail = reader.ReadBoolean();
+			State = (CubeState) reader.ReadVarInt();
 		}
 
 		public override bool CloneNewInstances =>
