@@ -14,7 +14,6 @@ namespace TheDeconstructor.Tiles
 	internal sealed class DeconstructorTE : ModTileEntity
 	{
 		public int frame = 0;
-		public int waitTime = 0;
 		public Vector2 DistanceToLocalPlayer = Vector2.Zero;
 
 		public override bool ValidTile(int i, int j)
@@ -23,8 +22,7 @@ namespace TheDeconstructor.Tiles
 			return
 				tile.active()
 				&& tile.type == mod.TileType<Deconstructor>()
-				&& tile.frameX == 0
-				&& tile.frameY == 0;
+				&& tile.IsTopLeftFrame();
 		}
 
 		public override void Update()
@@ -32,51 +30,47 @@ namespace TheDeconstructor.Tiles
 			DistanceToLocalPlayer =
 					new Vector2(Position.X, Position.Y) * 16f -
 					Main.LocalPlayer.position;
-
-			if (waitTime++ >= 4)
-			{
-				frame = (frame + 1) % 7;
-				waitTime = 0;
-			}
 		}
 
 		public override int Hook_AfterPlacement(int i, int j, int type, int style, int direction)
 		{
-			if (Main.netMode == 1)
-			{
-				NetMessage.SendTileRange(Main.myPlayer, i, j, 4, 3);
-				NetMessage.SendData(MessageID.TileEntityPlacement, -1, -1, "", i, j);
-				return -1;
-			}
-			return Place(i, j);
+			// Subtract the origin
+			i -= 2;
+			j -= 2;
+			// Singleplayer
+			if (Main.netMode != NetmodeID.MultiplayerClient)
+				return Place(i, j);
+			// Multiplayer
+			NetMessage.SendTileSquare(Main.myPlayer, i, j, 4, TileChangeType.None);
+			NetMessage.SendData(MessageID.TileEntityPlacement, -1, -1, "", i, j, 0f, 0f, 0, 0, 0);
+			return -1;
 		}
 	}
 
 
 	internal sealed class Deconstructor : ModTile
 	{
-		private const int w = 16;
+		private const int s = 16;
 		private const int p = 2;
 
 		public override void SetDefaults()
 		{
 			Main.tileLighted[Type] = true;
 			Main.tileNoAttach[Type] = true;
-			Main.tileLavaDeath[Type] = false;
 			Main.tileFrameImportant[Type] = true;
 
 			TileObjectData.newTile.Width = 4;
 			TileObjectData.newTile.Height = 3;
 			TileObjectData.newTile.AnchorBottom = new AnchorData(AnchorType.SolidTile, TileObjectData.newTile.Width, 0);
 			TileObjectData.newTile.UsesCustomCanPlace = true;
-
-			TileObjectData.newTile.CoordinateWidth = w;
+			TileObjectData.newTile.CoordinateWidth = s;
 			TileObjectData.newTile.CoordinatePadding = p;
-			TileObjectData.newTile.CoordinateHeights = new int[] { w, w, w };
+			TileObjectData.newTile.CoordinateHeights = new int[] { s, s, s };
 			TileObjectData.newTile.HookPostPlaceMyPlayer = new PlacementHook(mod.GetTileEntity("DeconstructorTE").Hook_AfterPlacement, -1, 0, false);
+			TileObjectData.newTile.Origin = new Point16(2, 2);
 			TileObjectData.newTile.DrawYOffset = 2;
 			TileObjectData.addTile(Type);
-
+			AddToArray(ref TileID.Sets.RoomNeeds.CountsAsTable);
 			AddMapEntry(new Color(50, 50, 50), "Lunar Deconstructor");
 
 			disableSmartCursor = true;
@@ -88,9 +82,9 @@ namespace TheDeconstructor.Tiles
 			if (tile.type == Type)
 			{
 				// Try to get top left frame (0,0)
-				var x = i - tile.frameX / (w + p);
-				var y = j - tile.frameY / (w + p);
-				TheDeconstructor.instance.deconGUI.tileData = new short[] { (short)x, (short)y };
+				var x = i - tile.frameX / (s + p);
+				var y = j - tile.frameY / (s + p);
+				TheDeconstructor.instance.deconGUI.tileData = new Point16(x, y);
 				TheDeconstructor.instance.TryToggleGUI();
 			}
 		}
@@ -99,15 +93,13 @@ namespace TheDeconstructor.Tiles
 		{
 			Color useColor = Color.White;
 			Tile tile = Main.tile[i, j];
-			if (tile.type == Type)
+			if (tile.type == Type
+				&& tile.IsTopLeftFrame())
 			{
 				// Try to get top left frame (0,0)
-				var x = i - tile.frameX / (w + p);
-				var y = j - tile.frameY / (w + p);
 				var inst = TheDeconstructor.instance;
 				if (inst.deconGUI.tileData != null
-					&& inst.deconGUI.tileData[0] == x
-					&& inst.deconGUI.tileData[1] == y
+					&& inst.deconGUI.tileData == new Point16(i, j)
 					&& inst.deconGUI.visible
 					&& !inst.deconGUI.cubeItemPanel.item.IsAir
 					&& inst.deconGUI.cubeItemPanel.item.modItem is QueerLunarCube)
@@ -136,14 +128,13 @@ namespace TheDeconstructor.Tiles
 			if (tile.type == Type
 				&& tile.IsTopLeftFrame())
 			{
-				var TE = TileEntity.ByPosition[new Point16(i, j)] as DeconstructorTE;
 				var inst = TheDeconstructor.instance;
 				if (inst.deconGUI.visible
 					&& !inst.deconGUI.cubeItemPanel.item.IsAir
 					&& inst.deconGUI.tileData != null
-					&& inst.deconGUI.tileData[0] == i
-					&& inst.deconGUI.tileData[1] == j)
+					&& inst.deconGUI.tileData == new Point16(i, j))
 				{
+					var TE = TileEntity.ByPosition[inst.deconGUI.tileData.Value] as DeconstructorTE;
 					Color useColor =
 						inst.deconGUI.cubeItemPanel.item.modItem is QueerLunarCube
 							? Tools.DiscoColor()
@@ -159,7 +150,8 @@ namespace TheDeconstructor.Tiles
 					Vector2 offset = new Vector2(36f, 8f); // offset 2.5 tiles horizontal, 0.5 tile vertical
 					Vector2 position = new Vector2(i, j) * 16f - Main.screenPosition + offset;
 					Vector2 origin = new Vector2(frameHeight, frameWidth) * 0.5f;
-
+					// tiles draw every 5 ticks, so we can safely increment here
+					TE.frame = (TE.frame + 1) % 8;
 					spriteBatch.Draw(animTexture, position + zero,
 						new Rectangle(0, frameHeight * TE.frame, frameWidth, frameHeight), useColor, 0f, origin, 1f,
 						SpriteEffects.None, 0f);

@@ -66,7 +66,9 @@ namespace TheDeconstructor.Items
 
 		public override DrawAnimation GetAnimation()
 		{
-			return new DrawAnimationVertical(4, 8);
+			// tiles are drawn every 5 frames, dont go below 5 ticks per frame
+			// so that the tile can draw the cubes at the same interval
+			return new DrawAnimationVertical(5, 8);
 		}
 
 		public virtual TagCompound CubeSave()

@@ -90,8 +90,6 @@
     <Content Include="Sounds\Custom\Receive.wav" />
     <Content Include="Sounds\Custom\Redeem.wav" />
     <Content Include="Tiles\Deconstructor.png" />
-    <Content Include="Tiles\DeconstructorOld.png" />
-    <Content Include="Tiles\Lonely.png" />
   </ItemGroup>
   <ItemGroup>
     <None Include=".travis.yml" />

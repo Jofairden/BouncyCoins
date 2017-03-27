@@ -15,9 +15,9 @@ using TheDeconstructor.Tiles;
 
 namespace TheDeconstructor
 {
-	internal class DeconstructorGUI : UIState
+	internal sealed class DeconstructorGUI : UIState
 	{
-		internal short[] tileData = new short[2];
+		internal Point16? tileData = null;
 		internal bool hoveringChild = false;
 		internal bool visible = false;
 		internal bool dragging = false;
@@ -209,14 +209,14 @@ namespace TheDeconstructor
 			if (tileData == null)
 				return;
 
-			// Get tile entity from tile data (top left 0,0 frame of tile)
-			var TE = TileEntity.ByPosition[new Point16(tileData[0], tileData[1])] as DeconstructorTE;
-			// Close UI if too far from tile
-			if (Math.Abs(TE.DistanceToLocalPlayer.X) > 12f * 16f || Math.Abs(TE.DistanceToLocalPlayer.Y) > 12f * 16f
-				|| Main.inputTextEscape || Main.LocalPlayer.dead || Main.gameMenu)
-			{
-				TheDeconstructor.instance.TryToggleGUI(false);
-			}
+			//// Get tile entity from tile data (top left 0, 0 frame of tile)
+			//var TE = TileEntity.ByPosition[tileData.Value] as DeconstructorTE;
+			//// Close UI if too far from tile
+			//if (Math.Abs(TE.DistanceToLocalPlayer.X) > 12f * 16f || Math.Abs(TE.DistanceToLocalPlayer.Y) > 12f * 16f
+			//	|| Main.inputTextEscape || Main.LocalPlayer.dead || Main.gameMenu)
+			//{
+			//	TheDeconstructor.instance.TryToggleGUI(false);
+			//}
 		}
 
 		internal class UIRecipePanel : UIPanel
