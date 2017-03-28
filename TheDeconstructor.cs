@@ -4,6 +4,7 @@ using Terraria;
 using Terraria.DataStructures;
 using Terraria.ModLoader;
 using Terraria.UI;
+using TheDeconstructor.Tiles;
 
 namespace TheDeconstructor
 {
@@ -87,7 +88,7 @@ namespace TheDeconstructor
 			layers[insertLayer].Skip = insertLayer != -1 && deconGUI.IsMouseHovering;
 		}
 
-		internal void TryToggleGUI(bool? state = null)
+		internal void TryToggleGUI(bool? state = null, DeconstructorTE TE = null)
 		{
 			bool visible =
 				state ?? !deconGUI.visible;
@@ -99,6 +100,15 @@ namespace TheDeconstructor
 
 			deconGUI.visible = visible;
 			deconGUI.ToggleUI(visible);
+
+			if (TE != null)
+			{
+				TE.isActive = visible;
+				TE.isActiveSource =
+					TE.isActive
+					? Main.myPlayer
+					: 0;
+			}
 		}
 	}
 }

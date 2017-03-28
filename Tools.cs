@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Terraria;
+using Terraria.DataStructures;
 using Terraria.GameContent.UI;
 using Terraria.ID;
 
@@ -38,6 +39,9 @@ namespace TheDeconstructor
 		public static bool IsTopLeftFrame(this Tile tile) =>
 			tile.frameX == 0
 			&& tile.frameY == 0;
+
+		public static Point16 GetTopLeftFrame(this Tile tile, int i, int j, int size, int padding) =>
+			new Point16(i - tile.frameX / (size + padding), j - tile.frameY / (size + padding));
 
 		public static string ToHexString(this Color c) =>
 			$"#{c.R:X2}{c.G:X2}{c.B:X2}";

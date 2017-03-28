@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Terraria;
@@ -13,8 +14,11 @@ namespace TheDeconstructor.Tiles
 {
 	internal sealed class DeconstructorTE : ModTileEntity
 	{
+		//public DeconEntityInstance instance;
 		public int frame = 0;
-		public Vector2 DistanceToLocalPlayer = Vector2.Zero;
+		public bool isActive = false;
+		public int isActiveSource = 0;
+		public Vector2[] playerDistances = new Vector2[Main.maxPlayers];
 
 		public override bool ValidTile(int i, int j)
 		{
@@ -27,9 +31,27 @@ namespace TheDeconstructor.Tiles
 
 		public override void Update()
 		{
-			DistanceToLocalPlayer =
-					new Vector2(Position.X, Position.Y) * 16f -
-					Main.LocalPlayer.position;
+			//if (instance == null)
+			//{
+			//	instance = new DeconEntityInstance(ID);
+			//	var GUI = TheDeconstructor.instance.deconGUI;
+			//	if (!GUI.TEInstances.ContainsKey(ID))
+			//		GUI.TEInstances.Add(ID, instance);
+			//}
+
+			for (int i = 0; i < Main.maxPlayers; i++)
+			{
+				Player player = Main.player[i];
+				if (!player.active) break;
+				playerDistances[i] = new Vector2(Position.X + 2, Position.Y + 2) * 16f - player.position;
+			}
+		}
+
+		public override void OnKill()
+		{
+			//var GUI = TheDeconstructor.instance.deconGUI;
+			//if (GUI.TEInstances.ContainsKey(ID))
+			//	GUI.TEInstances.Remove(ID);
 		}
 
 		public override int Hook_AfterPlacement(int i, int j, int type, int style, int direction)
@@ -42,11 +64,10 @@ namespace TheDeconstructor.Tiles
 				return Place(i, j);
 			// Multiplayer
 			NetMessage.SendTileSquare(Main.myPlayer, i, j, 4, TileChangeType.None);
-			NetMessage.SendData(MessageID.TileEntityPlacement, -1, -1, "", i, j, 0f, 0f, 0, 0, 0);
+			NetMessage.SendData(MessageID.TileEntityPlacement, -1, -1, "", i, j, Type, 0f, 0, 0, 0);
 			return -1;
 		}
 	}
-
 
 	internal sealed class Deconstructor : ModTile
 	{
@@ -81,11 +102,15 @@ namespace TheDeconstructor.Tiles
 			Tile tile = Main.tile[i, j];
 			if (tile.type == Type)
 			{
-				// Try to get top left frame (0,0)
-				var x = i - tile.frameX / (s + p);
-				var y = j - tile.frameY / (s + p);
-				TheDeconstructor.instance.deconGUI.tileData = new Point16(x, y);
-				TheDeconstructor.instance.TryToggleGUI();
+				var instance = TheDeconstructor.instance.deconGUI;
+				var TEPos = tile.GetTopLeftFrame(i, j, s, p);
+				var TE = (TileEntity.ByPosition[TEPos] as DeconstructorTE);
+				if (TE != null && (!TE.isActive || Main.myPlayer == TE.isActiveSource))
+				{
+					instance.currentTEPosition = TEPos;
+					//instance.currentInstance = TE?.instance.ID;
+					TheDeconstructor.instance.TryToggleGUI(null, TE);
+				}
 			}
 		}
 
@@ -93,13 +118,14 @@ namespace TheDeconstructor.Tiles
 		{
 			Color useColor = Color.White;
 			Tile tile = Main.tile[i, j];
+
 			if (tile.type == Type
 				&& tile.IsTopLeftFrame())
 			{
 				// Try to get top left frame (0,0)
 				var inst = TheDeconstructor.instance;
-				if (inst.deconGUI.tileData != null
-					&& inst.deconGUI.tileData == new Point16(i, j)
+
+				if (inst.deconGUI.currentTEPosition != null
 					&& inst.deconGUI.visible
 					&& !inst.deconGUI.cubeItemPanel.item.IsAir
 					&& inst.deconGUI.cubeItemPanel.item.modItem is QueerLunarCube)
@@ -129,12 +155,13 @@ namespace TheDeconstructor.Tiles
 				&& tile.IsTopLeftFrame())
 			{
 				var inst = TheDeconstructor.instance;
+
 				if (inst.deconGUI.visible
 					&& !inst.deconGUI.cubeItemPanel.item.IsAir
-					&& inst.deconGUI.tileData != null
-					&& inst.deconGUI.tileData == new Point16(i, j))
+					&& inst.deconGUI.currentTEPosition.HasValue
+					&& inst.deconGUI.currentTEPosition.Value == new Point16(i,j))
 				{
-					var TE = TileEntity.ByPosition[inst.deconGUI.tileData.Value] as DeconstructorTE;
+					var TE = TileEntity.ByPosition[inst.deconGUI.currentTEPosition.Value] as DeconstructorTE;
 					Color useColor =
 						inst.deconGUI.cubeItemPanel.item.modItem is QueerLunarCube
 							? Tools.DiscoColor()
@@ -155,7 +182,6 @@ namespace TheDeconstructor.Tiles
 					spriteBatch.Draw(animTexture, position + zero,
 						new Rectangle(0, frameHeight * TE.frame, frameWidth, frameHeight), useColor, 0f, origin, 1f,
 						SpriteEffects.None, 0f);
-
 				}
 			}
 		}

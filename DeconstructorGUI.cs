@@ -15,9 +15,36 @@ using TheDeconstructor.Tiles;
 
 namespace TheDeconstructor
 {
+	//internal sealed class DeconEntityInstance : DeconInstance
+	//{
+	//	public Item sourceItem;
+	//	public Item cubeItem;
+
+	//	public DeconEntityInstance(int id, int? player = null, Item source = null, Item cube = null) : base(id, player)
+	//	{
+	//		sourceItem = source ?? new Item();
+	//		cubeItem = cube ?? new Item();
+	//	}
+	//}
+
+	//internal abstract class DeconInstance
+	//{
+	//	public bool justUpdated = false;
+	//	public int? requestedPlayerID;
+	//	public int? ID;
+
+	//	protected DeconInstance(int id, int? player)
+	//	{
+	//		ID = id;
+	//		requestedPlayerID = player;
+	//	}
+	//}
+
 	internal sealed class DeconstructorGUI : UIState
 	{
-		internal Point16? tileData = null;
+		//internal Dictionary<int, DeconEntityInstance> TEInstances = new Dictionary<int, DeconEntityInstance>();
+		//internal int? currentInstance = null;
+		internal Point16? currentTEPosition = null;
 		internal bool hoveringChild = false;
 		internal bool visible = false;
 		internal bool dragging = false;
@@ -89,7 +116,7 @@ namespace TheDeconstructor
 			closeButton = new UIImageButton(TheDeconstructor.instance.GetTexture("closeButton"));
 			closeButton.OnClick += (s, e) =>
 			{
-				TheDeconstructor.instance.TryToggleGUI();
+				TheDeconstructor.instance.TryToggleGUI(false, TileEntity.ByPosition[currentTEPosition.Value] as DeconstructorTE);
 			};
 			closeButton.Width.Set(20f, 0f);
 			closeButton.Height.Set(20f, 0f);
@@ -133,8 +160,8 @@ namespace TheDeconstructor
 
 		public void _Recalculate(Vector2 mousePos, float precent = 0f)
 		{
-			_UIView.Left.Set(Math.Max(0, Math.Min(mousePos.X - offset.X, Main.screenWidth - basePanel.Width.Pixels)), precent);
-			_UIView.Top.Set(Math.Max(0, Math.Min(mousePos.Y - offset.Y, Main.screenHeight - basePanel.Height.Pixels)), precent);
+			_UIView.Left.Set(Math.Max(-vpadding * 2f, Math.Min(mousePos.X - offset.X, Main.screenWidth - basePanel.Width.Pixels + vpadding * 2f)), precent);
+			_UIView.Top.Set(Math.Max(-vpadding * 2f, Math.Min(mousePos.Y - offset.Y, Main.screenHeight - basePanel.Height.Pixels + vpadding * 2f)), precent);
 			Recalculate();
 		}
 
@@ -192,6 +219,8 @@ namespace TheDeconstructor
 		{
 			if (!on)
 			{
+				if (currentTEPosition.HasValue)
+					(TileEntity.ByPosition[currentTEPosition.Value] as DeconstructorTE).isActive = false;
 				recipeList.Clear();
 				TryGetCube();
 				TryGetSource();
@@ -206,17 +235,45 @@ namespace TheDeconstructor
 		{
 			base.Update(gameTime);
 
-			if (tileData == null)
+			//if (currentInstance != null)
+			//{
+			//	var instance = TEInstances[currentInstance.Value];
+			//	if (!instance.justUpdated)
+			//	{
+			//		bool b = false;
+			//		if (sourceItemPanel.item != instance.sourceItem)
+			//		{
+			//			instance.sourceItem = sourceItemPanel.item.Clone();
+			//			b = true;
+			//		}
+			//		if (cubeItemPanel.item != instance.cubeItem)
+			//		{
+			//			instance.cubeItem = cubeItemPanel.item.Clone();
+			//			b = true;
+			//		}
+
+			//		instance.justUpdated = b;
+			//	}
+			//	else
+			//		instance.justUpdated = false;
+
+			//	sourceItemPanel.BindItem(instance);
+			//	cubeItemPanel.BindItem(instance);
+			//}
+
+			if (currentTEPosition == null)
 				return;
 
-			//// Get tile entity from tile data (top left 0, 0 frame of tile)
-			//var TE = TileEntity.ByPosition[tileData.Value] as DeconstructorTE;
-			//// Close UI if too far from tile
-			//if (Math.Abs(TE.DistanceToLocalPlayer.X) > 12f * 16f || Math.Abs(TE.DistanceToLocalPlayer.Y) > 12f * 16f
-			//	|| Main.inputTextEscape || Main.LocalPlayer.dead || Main.gameMenu)
-			//{
-			//	TheDeconstructor.instance.TryToggleGUI(false);
-			//}
+			// Get tile entity from tile data (top left 0, 0 frame of tile)
+			var TE = TileEntity.ByPosition[currentTEPosition.Value] as DeconstructorTE;
+			// Close UI if too far from tile
+			if (
+				Math.Abs(TE.playerDistances[Main.myPlayer].X) > 12f * 16f
+				|| Math.Abs(TE.playerDistances[Main.myPlayer].Y) > 12f * 16f
+				|| Main.inputTextEscape || Main.LocalPlayer.dead || Main.gameMenu)
+			{
+				TheDeconstructor.instance.TryToggleGUI(false, TE);
+			}
 		}
 
 		internal class UIRecipePanel : UIPanel
@@ -381,10 +438,15 @@ namespace TheDeconstructor
 			{
 			}
 
+			//public override void BindItem(DeconEntityInstance instance)
+			//{
+			//	item = instance.cubeItem.Clone();
+			//}
+
 			public override bool CanTakeItem(Item item)
 			{
 				return item.modItem is Cube
-						&& (item.modItem as Cube).State == Cube.CubeState.Open;
+						&& ((Cube)item.modItem).State == Cube.CubeState.Open;
 			}
 		}
 
@@ -396,6 +458,11 @@ namespace TheDeconstructor
 			{
 
 			}
+
+			//public override void BindItem(DeconEntityInstance instance)
+			//{
+			//	item = instance.sourceItem.Clone();
+			//}
 
 			public override bool CanTakeItem(Item item)
 			{
@@ -580,6 +647,8 @@ namespace TheDeconstructor
 				this.HintTexture = hintTexture;
 				this.HintText = hintText;
 			}
+
+			//public virtual void BindItem(DeconEntityInstance instance) { }
 
 			protected override void DrawSelf(SpriteBatch spriteBatch)
 			{
