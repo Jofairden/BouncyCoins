@@ -62,7 +62,7 @@ namespace TheDeconstructor
 			}
 
 			insertLayer = layers.FindIndex(layer => layer.Name.Equals("Vanilla: Interact Item Icon"));
-			layers[insertLayer].Skip = insertLayer != -1 && deconGUI.IsMouseHovering;
+			layers[insertLayer].Skip = insertLayer != -1 && deconGUI.visible && deconGUI.IsMouseHovering;
 		}
 
 		/// <summary>

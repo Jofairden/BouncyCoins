@@ -52,6 +52,7 @@ Changelog from 0.1.1 to 0.2
 				This includes loss of ItemInfos
 			4) Infos for cubes (previously goodie bags) not being synced in multiplayer
 				Fixed using Netsend/Netreceive
+			5) Certain vanilla layer not being drawn when your mouse hovers the deconstructor UI, even when it's invisible
 
 	Sprite improvements
 		Tile sprite was improved.
