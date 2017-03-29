@@ -504,15 +504,19 @@ namespace TheDeconstructor
 			{
 				base.Width.Set(parent.Width.Pixels - offset, 0f);
 				base.Height.Set(parent.Height.Pixels - vpadding / 2f, 0f);
-				var suchEmpty = new UIImage(TheDeconstructor.DogeTexture);
+				var suchEmpty = new UIImage(TheDeconstructor.DogeTexture)
+				{
+					HAlign = 0.5f,
+					VAlign = 0.30f
+				};
 				suchEmpty.Width.Set(160f, 0f);
 				suchEmpty.Height.Set(160f, 0f);
-				suchEmpty.HAlign = 0.5f;
-				suchEmpty.VAlign = 0.30f;
 				base.Append(suchEmpty);
-				var text = new UIText("Wow, such empty", 1f, true);
-				text.HAlign = 0.5f;
-				text.VAlign = 0.85f;
+				var text = new UIText("Wow, such empty", 1f, true)
+				{
+					HAlign = 0.5f,
+					VAlign = 0.85f
+				};
 				base.Append(text);
 			}
 		}
@@ -546,6 +550,7 @@ namespace TheDeconstructor
 						recipePanel.resultValue = new ItemValue().SetFromCopperValue(source.value * source.stack).ToSellValue();
 						recipePanel.deconstructValue = new ItemValue();
 
+						int totalStack = source.stack;
 						var mats = recipePanel.materials;
 						var reqItems = recipe.requiredItem;
 						// Loop all material slots
@@ -558,6 +563,7 @@ namespace TheDeconstructor
 							// calc stack diff and at it to the matarial stack
 							float stackDiff = (float)(source.stack - recipe.createItem.stack) / (float)recipe.createItem.stack;
 							mats[i].item.stack += recipePanel.materials[i].item.stack * (int)stackDiff;
+							totalStack += mats[i].item.stack;
 
 							// Add material values
 							recipePanel.materialsValue.AddValues(mats[i].item.value * mats[i].item.stack);
@@ -565,7 +571,7 @@ namespace TheDeconstructor
 
 						recipePanel.materialsValue.ToSellValue();
 
-						// Values to usse
+						// Values to use
 						int diffValue = (int)Math.Abs(recipePanel.resultValue.RawValue - recipePanel.materialsValue.RawValue);
 						int combinedValue = (int)Math.Abs(recipePanel.resultValue.RawValue + recipePanel.materialsValue.RawValue);
 						int sourcePrefixValue = (int)(recipePanel.resultValue.RawValue / 3f);
@@ -585,16 +591,12 @@ namespace TheDeconstructor
 						}
 						else
 						{
-							recipePanel.deconstructValue.SetFromCopperValue(diffValue);
+							recipePanel.deconstructValue.SetFromCopperValue((int)(diffValue * 1.2f));
 						}
 
 						if (recipePanel.deconstructValue.RawValue <= 0)
-							recipePanel.deconstructValue.SetFromCopperValue(Item.buyPrice(0, 0, 50, 30));
+							recipePanel.deconstructValue.SetFromCopperValue(totalStack);
 						recipePanel.deconstructValue.ApplyDiscount(Main.LocalPlayer);
-						recipePanel.deconstructValue *= 1.2f;
-						//recipePanel.resultValue.ApplyDiscount(Main.LocalPlayer).ToSellValue();
-						//
-
 						list.Add(recipePanel);
 					}
 				}

@@ -1,6 +1,6 @@
 ﻿author = jofairden
 version = 0.2
-displayName = The Deconstructor
+displayName = Lunar Deconstructor
 homepage = https://forums.terraria.org/index.php?threads/.55904/
 hideCode = true
 hideResources = true

@@ -1,10 +1,12 @@
 ﻿Changelogs below
 See homepage for more detailed info
 
-Lunar Deconstructor is crafted with 10 lunar fragments of each type and 10 lunar bars at the Ancient Manipulator.
+Note: currently doesn't work in multiplayer, requires tML changes. Will be multiplayer compatible on v0.3
+
+Lunar Deconstructor is crafted with 10 lunar fragments of each type (solar, vortex, stardust, nebula) and 10 lunar (luminite) bars at the Ancient Manipulator.
 On right clicking, the deconstruction UI opens. You can put in an unsealed lunar cube and an item to search for recipes.
 Then, you can choose which recipe you want to seal in the cube, for a price.
-Cubes can be unsealed with a right click, traded with players, works in multiplayer.
+Cubes can be unsealed with a right click.
 Some items have failure rate in place, such as potions, flasks and lunar fragments. This is to avoid exploiting.
 
 You can craft a Lunar Cube at the Lunar Deconstructor with 1 of any Lunar Fragment and 1 Lunar Bar.
@@ -19,39 +21,48 @@ Changelog from 0.1.1 to 0.2
 
 	General
 		'Deconstructor' renamed to 'Lunar Deconstructor'
-		Goodie bag is gone, now 'Lunar Cube', upgraded version is 'Queer Lunar Cube'.
-		You can craft a Lunar Cube at the Lunar Deconstructor with 1 of any Lunar Fragment and 1 Lunar Bar.
-		A 'Queer' Lunar Cube is crafted with 1 Lunar Cube and 1 of any Lunar Fragment at the Lunar Deconstructor.
-		A Queer Lunar Cube can be sealed and unsealed without being destroyed, a Lunar Cube can be unsealed once before being destroyed.
-		Queer Lunar Cubes are recognizable by their morphing colors.
-		The cubes also have a overhauled tooltips and tooltip ordering (compared to the old goodie bag)
-		While deconstruction UI is open, rightclicking a cube will not unseal it to prevent accidental openings.
+		Goodie bag is gone, now 'Lunar Cube', upgraded version is 'Queer Lunar Cube'
+		You can craft a Lunar Cube at the Lunar Deconstructor with 1 of any Lunar Fragment and 1 Lunar Bar
+		A 'Queer' Lunar Cube is crafted with 1 Lunar Cube and 1 of any Lunar Fragment at the Lunar Deconstructor
+		A Queer Lunar Cube can be unsealed without being destroyed, a Lunar Cube is destroyed itself upon unsealing
+		A Queer Lunar Cube is recognizable by its morphing colors
+		The cubes also have a overhauled tooltips and tooltip ordering
+		While deconstruction UI is open, right clicking a cube will not unseal it to prevent accidental openings
 		Item loss chance changed to 30% (from 20%)
+		Tile itself no longer draws cube all the time, instead it will draw the cube that's currently it its UI
+		All SFX volume lowered by 50%, no more earrape guys
+		Lunar Deconstructor now counts as a table for rooms
+		Changed tile origin for easier placement
+		Changed mod display name to 'Lunar Deconstructor'
+		Changed deconstruction pricing ever so slightly (deconstructs with no value are now based off of total stack count)
 
 	UI Changes
 		There's now a new slot (top slot) which will take an unsealed cube, contents will be sealed into this cube
-		The bottom slot is for the item you want to seal
+		The bottom slot is for the item you want to seal. Tooltips will show on mouse hover to help you.
 		UI will now show reddit's 'Wow, such empty' doge when the list is empty, because the initial preview was posted on reddit
-		UI item slots now supports ModItem Pre/Post DrawInInventory, along with a 'breathing' effect (such as lunar fragments)
+		UI item slots now supports ModItem Pre/Post DrawInInventory, along with a 'breathing' effect (lunar fragments 'breathe', for example)
 		UI item slots stack drawing improved: now draws with black border (FourWay)
 
 	Bugfixes
 		Fixed several bugs, including but not limited to:
-			1) Not receiving items when UI is forcefully closed
+			1) Not receiving items when UI is forcefully closed in certain circumstances
 			2) Distance from tile to player not being managed properly
-				This is fixed by shifting the logic completely to a TileEntity
+				This is fixed by shifting the logic completely to the TileEntity
 			3) Right click not functioning properly on UI ItemSlots
 				This includes loss of ItemInfos
+			4) Infos for cubes (previously goodie bags) not being synced in multiplayer
+				Fixed using Netsend/Netreceive
 
 	Sprite improvements
 		Tile sprite was improved.
 		Cube sprite was improved.
-		Both cubes share the same sprite, but the Queer version morphs colors.
+		Queer cube morphs in colors.
 	
 	Other
 		Massive improvements/reworks in code, check github
-		Vanilla 'flask' are now also seen as potions, and thus will have a failure rate in place.
-		By changing the code to use ItemRarity.GetColor, the rarity for level 4 should now be properly displayed
+		Vanilla 'flask' are now also seen as potions, and thus will have a failure rate in place
+		Lunar fragments (solar, vortex, stardust, nebula) now also have a failure rate in place
+		By changing the code to use ItemRarity.GetColor, the rarity color for level 4 should now be correct
 		Added 2 more 'errors' in UI:
 			1) When trying to seal an already sealed cube
 			2) When trying to seal with no cube in the UI

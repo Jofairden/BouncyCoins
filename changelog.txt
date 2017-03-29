@@ -8,12 +8,14 @@
 		A Queer Lunar Cube can be unsealed without being destroyed, a Lunar Cube is destroyed itself upon unsealing
 		A Queer Lunar Cube is recognizable by its morphing colors
 		The cubes also have a overhauled tooltips and tooltip ordering
-		While deconstruction UI is open, right clicking a cube will not unseal it to prevent accidental openings.
+		While deconstruction UI is open, right clicking a cube will not unseal it to prevent accidental openings
 		Item loss chance changed to 30% (from 20%)
 		Tile itself no longer draws cube all the time, instead it will draw the cube that's currently it its UI
-		All SFX volume lowered by 50%, no more earrape guys.
-		Lunar Deconstructor now counts as a table for rooms.
-		Changed tile origin for easier placement.
+		All SFX volume lowered by 50%, no more earrape guys
+		Lunar Deconstructor now counts as a table for rooms
+		Changed tile origin for easier placement
+		Changed mod display name to 'Lunar Deconstructor'
+		Changed deconstruction pricing ever so slightly (deconstructs with no value are now based off of total stack count)
 
 	UI Changes
 		There's now a new slot (top slot) which will take an unsealed cube, contents will be sealed into this cube
