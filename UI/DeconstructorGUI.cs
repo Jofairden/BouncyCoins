@@ -11,9 +11,8 @@ using Terraria.ModLoader;
 using Terraria.UI;
 using TheDeconstructor.Items;
 using TheDeconstructor.Tiles;
-using TheDeconstructor.UI;
 
-namespace TheDeconstructor
+namespace TheDeconstructor.UI
 {
 	//internal sealed class DeconEntityInstance : DeconInstance
 	//{

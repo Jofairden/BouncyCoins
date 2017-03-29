@@ -25,7 +25,6 @@ namespace TheDeconstructor.Items
 			item.height = 30;
 			item.value = Item.sellPrice(0, 35, 0, 0);
 			item.createTile = mod.TileType<Tiles.Deconstructor>();
-			ItemID.Sets.ItemNoGravity[item.type] = true;
 		}
 
 		public override void ModifyTooltips(List<TooltipLine> tooltips)

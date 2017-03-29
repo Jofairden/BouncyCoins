@@ -5,6 +5,7 @@ using Terraria.DataStructures;
 using Terraria.ModLoader;
 using Terraria.UI;
 using TheDeconstructor.Tiles;
+using TheDeconstructor.UI;
 
 namespace TheDeconstructor
 {
@@ -17,7 +18,7 @@ namespace TheDeconstructor
 
 		public TheDeconstructor()
 		{
-			Properties = new ModProperties()
+			Properties = new ModProperties
 			{
 				Autoload = true,
 				AutoloadSounds = true
@@ -26,7 +27,7 @@ namespace TheDeconstructor
 
 		public override void Load()
 		{
-			instance = this as TheDeconstructor;
+			instance = this;
 			if (Main.dedServ) return;
 
 			DogeTexture = GetTexture("EmptyDoge");

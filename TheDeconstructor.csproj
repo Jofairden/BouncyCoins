@@ -63,7 +63,7 @@
     <Compile Include="DeconGlobalItem.cs" />
     <Compile Include="Items\Cube.cs" />
     <Compile Include="Items\LunarCube.cs" />
-    <Compile Include="DeconstructorGUI.cs" />
+    <Compile Include="UI\DeconstructorGUI.cs" />
     <Compile Include="Items\Deconstructor.cs" />
     <Compile Include="Items\QueerLunarCube.cs" />
     <Compile Include="ItemValue.cs" />
