@@ -4,7 +4,6 @@ using Terraria;
 using Terraria.DataStructures;
 using Terraria.ModLoader;
 using Terraria.UI;
-using TheDeconstructor.Tiles;
 using TheDeconstructor.UI;
 
 namespace TheDeconstructor
