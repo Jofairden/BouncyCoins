@@ -1,4 +1,5 @@
-﻿using Terraria.ID;
+﻿using Microsoft.Xna.Framework;
+using Terraria.ID;
 using Terraria.ModLoader;
 
 namespace TheDeconstructor.Items
@@ -11,8 +12,14 @@ namespace TheDeconstructor.Items
 			item.name = "Lunar Cube";
 		}
 
-		public override ModItem Clone()
-			=> CubeClone<LunarCube>() as ModItem;
+		public override ModItem Clone() => 
+			CubeClone<LunarCube>();
+
+		public override Color? GetAlpha(Color lightColor) =>
+			CubeColor<LunarCube>();
+
+		public override void PostUpdate() =>
+			CubeLighting<LunarCube>();
 
 		public override void AddRecipes()
 		{

@@ -8,35 +8,6 @@ using TheDeconstructor.Tiles;
 
 namespace TheDeconstructor
 {
-	internal static class SoundHelper
-	{
-		internal static string[] Sounds =
-		{
-			"CloseUI",
-			"Decline",
-			"Notif",
-			"OpenUI",
-			"Receive",
-			"Redeem"
-		};
-
-		internal enum SoundType
-		{
-			CloseUI,
-			Decline,
-			Notif,
-			OpenUI,
-			Receive,
-			Redeem
-		}
-
-		internal static void PlaySound(SoundType type)
-		{
-			Main.PlaySound(SoundLoader.customSoundType, -1, -1,
-				TheDeconstructor.instance.GetSoundSlot(Terraria.ModLoader.SoundType.Custom, "Sounds/Custom/" + Sounds[(int)type]));
-		}
-	}
-
 	public class TheDeconstructor : Mod
 	{
 		internal UserInterface deconUI;
@@ -56,16 +27,21 @@ namespace TheDeconstructor
 		public override void Load()
 		{
 			instance = this as TheDeconstructor;
-
 			if (Main.dedServ) return;
+
 			DogeTexture = GetTexture("EmptyDoge");
 			DogeTexture.MultiplyColorsByAlpha();
+
 			deconUI = new UserInterface();
 			deconGUI = new DeconstructorGUI();
 			deconGUI.Activate();
 			deconUI.SetState(deconGUI);
 		}
 
+		/// <summary>
+		/// Insert our UI layer between vanilla layers
+		/// </summary>
+		/// <param name="layers"></param>
 		public override void ModifyInterfaceLayers(List<MethodSequenceListItem> layers)
 		{
 			int insertLayer = layers.FindIndex(layer => layer.Name.Equals("Vanilla: Mouse Text"));
@@ -88,7 +64,11 @@ namespace TheDeconstructor
 			layers[insertLayer].Skip = insertLayer != -1 && deconGUI.IsMouseHovering;
 		}
 
-		internal void TryToggleGUI(bool? state = null, DeconstructorTE TE = null)
+		/// <summary>
+		/// Try toggling our UI
+		/// </summary>
+		/// <param name="state"></param>
+		internal void TryToggleGUI(bool? state = null)
 		{
 			bool visible =
 				state ?? !deconGUI.visible;
@@ -100,15 +80,6 @@ namespace TheDeconstructor
 
 			deconGUI.visible = visible;
 			deconGUI.ToggleUI(visible);
-
-			if (TE != null)
-			{
-				TE.isActive = visible;
-				TE.isActiveSource =
-					TE.isActive
-					? Main.myPlayer
-					: 0;
-			}
 		}
 	}
 }

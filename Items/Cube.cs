@@ -190,7 +190,7 @@ namespace TheDeconstructor.Items
 
 		public virtual void NotifyLoss(int type, int stack)
 		{
-			string str = $"[i/s1:{type}] (x{stack}) was lost while unsealing!";
+			string str = $"[i/s1:{type}] (x{stack}) was lost!";
 			Main.NewText(str, 255);
 			if (Main.netMode == NetmodeID.MultiplayerClient)
 				NetMessage.SendData(MessageID.ChatText, -1, -1, str, 255);
@@ -247,6 +247,11 @@ namespace TheDeconstructor.Items
 
 		}
 
+		/// <summary>
+		/// How our cube item is cloned
+		/// </summary>
+		/// <typeparam name="T"></typeparam>
+		/// <returns></returns>
 		public virtual Cube CubeClone<T>() where T : Cube, new()
 		{
 			Cube clone = new T
@@ -259,12 +264,20 @@ namespace TheDeconstructor.Items
 			return clone;
 		}
 
-		public override void PostUpdate()
+		public virtual Color CubeColor<T>() where T : Cube, new()
 		{
-			Color useColor =
-			   item.type == mod.ItemType<QueerLunarCube>()
-				   ? Tools.DiscoColor()
-				   : Color.White;
+			var inst = new T();
+			return
+				inst is LunarCube
+					? Color.White
+					: inst is QueerLunarCube
+						? Tools.DiscoColor()
+						: Color.White;
+		}
+
+		public virtual void CubeLighting<T>() where T : Cube, new()
+		{
+			Color useColor = CubeColor<T>();
 			var sine = (float)Math.Sin(Main.essScale * 0.50f);
 			var r = 0.05f + 0.35f * sine * useColor.R * 0.01f;
 			var g = 0.05f + 0.35f * sine * useColor.G * 0.01f;

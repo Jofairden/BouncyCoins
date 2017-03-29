@@ -21,14 +21,13 @@ namespace TheDeconstructor.Items
 		}
 
 		public override ModItem Clone()
-			 => CubeClone<QueerLunarCube>() as ModItem;
+			 => CubeClone<QueerLunarCube>();
 
-		public override Color? GetAlpha(Color lightColor)
-		{
-			var c = Tools.DiscoColor();
-			c.A = lightColor.A;
-			return c;
-		}
+		public override Color? GetAlpha(Color lightColor) =>
+			CubeColor<QueerLunarCube>();
+
+		public override void PostUpdate() =>
+			CubeLighting<QueerLunarCube>();
 
 		public override void AddRecipes()
 		{
@@ -40,5 +39,4 @@ namespace TheDeconstructor.Items
 			recipe.AddRecipe();
 		}
 	}
-
 }

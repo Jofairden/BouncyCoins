@@ -10,6 +10,7 @@ namespace TheDeconstructor
 {
 	public static class Tools
 	{
+		// Can be removed upon tML update
 		public static int GiveClonedItem(this Player player, Item item, int stack)
 		{
 			int index = Item.NewItem((int)player.position.X, (int)player.position.Y, player.width, player.height, item.type, stack, false, -1, false, false);
@@ -49,6 +50,7 @@ namespace TheDeconstructor
 		public static string ToRgbString(this Color c) =>
 			$"RGB({c.R}, {c.G}, {c.B})";
 
+		// Can be removed upon tML update
 		public static Color DiscoColor() =>
 			new Color(Main.DiscoR, Main.DiscoG, Main.DiscoB);
 

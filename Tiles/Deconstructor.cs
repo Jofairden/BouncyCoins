@@ -15,9 +15,9 @@ namespace TheDeconstructor.Tiles
 	internal sealed class DeconstructorTE : ModTileEntity
 	{
 		//public DeconEntityInstance instance;
+		public bool isCurrentlyActive = false; // if someone is in UI
+		public int player = -1; // active player
 		public int frame = 0;
-		public bool isActive = false;
-		public int isActiveSource = 0;
 		public Vector2[] playerDistances = new Vector2[Main.maxPlayers];
 
 		public override bool ValidTile(int i, int j)
@@ -105,11 +105,13 @@ namespace TheDeconstructor.Tiles
 				var instance = TheDeconstructor.instance.deconGUI;
 				var TEPos = tile.GetTopLeftFrame(i, j, s, p);
 				var TE = (TileEntity.ByPosition[TEPos] as DeconstructorTE);
-				if (TE != null && (!TE.isActive || Main.myPlayer == TE.isActiveSource))
+				if (!TE.isCurrentlyActive
+					|| TE.player == Main.myPlayer)
 				{
+					TE.isCurrentlyActive = !TE.isCurrentlyActive;
+					TE.player = Main.myPlayer;
 					instance.currentTEPosition = TEPos;
-					//instance.currentInstance = TE?.instance.ID;
-					TheDeconstructor.instance.TryToggleGUI(null, TE);
+					TheDeconstructor.instance.TryToggleGUI();
 				}
 			}
 		}
@@ -159,7 +161,7 @@ namespace TheDeconstructor.Tiles
 				if (inst.deconGUI.visible
 					&& !inst.deconGUI.cubeItemPanel.item.IsAir
 					&& inst.deconGUI.currentTEPosition.HasValue
-					&& inst.deconGUI.currentTEPosition.Value == new Point16(i,j))
+					&& inst.deconGUI.currentTEPosition.Value == new Point16(i, j))
 				{
 					var TE = TileEntity.ByPosition[inst.deconGUI.currentTEPosition.Value] as DeconstructorTE;
 					Color useColor =
