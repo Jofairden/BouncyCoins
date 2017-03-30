@@ -14,8 +14,8 @@ namespace TheDeconstructor.Tiles
 	internal sealed class DeconstructorTE : ModTileEntity
 	{
 		//public DeconEntityInstance instance;
-		public bool isCurrentlyActive = false; // if someone is in UI
-		public int player = -1; // active player
+		//public bool isCurrentlyActive = false; // if someone is in UI
+		//public int player = -1; // active player
 		public int frame = 0;
 		public Vector2[] playerDistances = new Vector2[Main.maxPlayers];
 
@@ -103,15 +103,17 @@ namespace TheDeconstructor.Tiles
 			{
 				var instance = TheDeconstructor.instance.deconGUI;
 				var TEPos = tile.GetTopLeftFrame(i, j, s, p);
-				var TE = (TileEntity.ByPosition[TEPos] as DeconstructorTE);
-				if (!TE.isCurrentlyActive
-					|| TE.player == Main.myPlayer)
-				{
-					TE.isCurrentlyActive = !TE.isCurrentlyActive;
-					TE.player = Main.myPlayer;
-					instance.currentTEPosition = TEPos;
-					TheDeconstructor.instance.TryToggleGUI();
-				}
+				//var TE = (TileEntity.ByPosition[TEPos] as DeconstructorTE);
+				instance.currentTEPosition = TEPos;
+				TheDeconstructor.instance.TryToggleGUI();
+				//if (!TE.isCurrentlyActive
+				//	|| TE.player == Main.myPlayer)
+				//{
+				//	TE.isCurrentlyActive = !TE.isCurrentlyActive;
+				//	TE.player = Main.myPlayer;
+				//	instance.currentTEPosition = TEPos;
+				//	TheDeconstructor.instance.TryToggleGUI();
+				//}
 			}
 		}
 
@@ -120,13 +122,12 @@ namespace TheDeconstructor.Tiles
 			Color useColor = Color.White;
 			Tile tile = Main.tile[i, j];
 
-			if (tile.type == Type
-				&& tile.IsTopLeftFrame())
+			if (tile.type == Type)
 			{
-				// Try to get top left frame (0,0)
 				var inst = TheDeconstructor.instance;
 
-				if (inst.deconGUI.currentTEPosition != null
+				if (inst.deconGUI.currentTEPosition.HasValue
+					&& inst.deconGUI.currentTEPosition.Value == tile.GetTopLeftFrame(i, j, s, p)
 					&& inst.deconGUI.visible
 					&& !inst.deconGUI.cubeItemPanel.item.IsAir
 					&& inst.deconGUI.cubeItemPanel.item.modItem is QueerLunarCube)
@@ -160,7 +161,7 @@ namespace TheDeconstructor.Tiles
 				if (inst.deconGUI.visible
 					&& !inst.deconGUI.cubeItemPanel.item.IsAir
 					&& inst.deconGUI.currentTEPosition.HasValue
-					&& inst.deconGUI.currentTEPosition.Value == new Point16(i, j))
+					&& inst.deconGUI.currentTEPosition.Value == tile.GetTopLeftFrame(i,j,s,p))
 				{
 					var TE = TileEntity.ByPosition[inst.deconGUI.currentTEPosition.Value] as DeconstructorTE;
 					Color useColor =

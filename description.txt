@@ -3,11 +3,11 @@ See homepage for more detailed info
 
 Note: currently doesn't work in multiplayer, requires tML changes. Will be multiplayer compatible on v0.3
 
-Lunar Deconstructor is crafted with 10 lunar fragments of each type (solar, vortex, stardust, nebula) and 10 lunar (luminite) bars at the Ancient Manipulator.
+Lunar Deconstructor is crafted with 10 lunar fragments of each type (solar, vortex, stardust, nebula) and 10 lunar (luminite) bars at the Ancient Manipulator. 
 On right clicking, the deconstruction UI opens. You can put in an unsealed lunar cube and an item to search for recipes.
 Then, you can choose which recipe you want to seal in the cube, for a price.
 Cubes can be unsealed with a right click.
-Some items have failure rate in place, such as potions, flasks and lunar fragments. This is to avoid exploiting.
+Some items have failure rate in place, such as potions, flasks and lunar fragments. This is to avoid exploiting. The costs of deconstructing these is also increased.
 
 You can craft a Lunar Cube at the Lunar Deconstructor with 1 of any Lunar Fragment and 1 Lunar Bar.
 A 'Queer' Lunar Cube is crafted with 1 Lunar Cube and 1 of any Lunar Fragment at the Lunar Deconstructor.

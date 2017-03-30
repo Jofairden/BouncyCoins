@@ -268,8 +268,8 @@ namespace TheDeconstructor.UI
 				|| Math.Abs(TE.playerDistances[Main.myPlayer].Y) > 12f * 16f
 				|| Main.LocalPlayer.dead || Main.gameMenu)
 			{
-				TE.isCurrentlyActive = false;
-				TE.player = -1;
+				//TE.isCurrentlyActive = false;
+				//TE.player = -1;
 				TheDeconstructor.instance.TryToggleGUI(false);
 			}
 		}
