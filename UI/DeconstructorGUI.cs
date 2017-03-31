@@ -45,7 +45,7 @@ namespace TheDeconstructor.UI
 		//internal int? currentInstance = null;
 		internal Point16? currentTEPosition = null;
 		internal bool visible = false;
-		private bool dragging = false;
+		internal bool dragging = false;
 		private Vector2 offset;
 
 		internal const float vpadding = 10;
@@ -94,16 +94,8 @@ namespace TheDeconstructor.UI
 		public override void OnInitialize()
 		{
 			basePanel = new UIPanel();
-			basePanel.OnMouseUp += (s, e) =>
-			{
-				_Recalculate(s.MousePosition);
-				dragging = false;
-			};
-			basePanel.OnMouseDown += (s, e) =>
-			{
-				offset = new Vector2(s.MousePosition.X - _UIView.Left.Pixels, s.MousePosition.Y - _UIView.Top.Pixels);
-				dragging = true;
-			};
+			basePanel.OnMouseUp += BasePanel_OnMouseUp;
+			basePanel.OnMouseDown += BasePanel_OnMouseDown;
 			basePanel.CopyStyle(this);
 			basePanel.SetPadding(vpadding);
 			_UIView.Append(basePanel);
@@ -112,10 +104,7 @@ namespace TheDeconstructor.UI
 			basePanel.Append(baseTitle);
 
 			closeButton = new UIImageButton(TheDeconstructor.instance.GetTexture("closeButton"));
-			closeButton.OnClick += (s, e) =>
-			{
-				TheDeconstructor.instance.TryToggleGUI(false);
-			};
+			closeButton.OnClick += CloseButton_OnClick;
 			closeButton.Width.Set(20f, 0f);
 			closeButton.Height.Set(20f, 0f);
 			closeButton.Left.Set(basePanel.Width.Pixels - closeButton.Width.Pixels * 2 - vpadding * 4.75f, 0f);
@@ -137,7 +126,7 @@ namespace TheDeconstructor.UI
 			basePanel.Append(sourceItemPanel);
 
 			recipeList = new UIList();
-			recipeList.Width.Set(basePanel.Width.Pixels - cubeItemPanel.Width.Pixels * 2f, 0f);
+			recipeList.Width.Set(400, 0f);
 			recipeList.Height.Set(basePanel.Height.Pixels - cubeItemPanel.Top.Pixels * 2f - vpadding * 3f, 0f);
 			recipeList.Left.Set(cubeItemPanel.Width.Pixels + vpadding / 2f, 0f);
 			recipeList.Top.Set(cubeItemPanel.Top.Pixels, 0f);
@@ -147,13 +136,36 @@ namespace TheDeconstructor.UI
 			basePanel.Append(recipeList);
 
 			recipeScrollbar = new FixedUIScrollbar(TheDeconstructor.instance.deconUI);
-			recipeScrollbar.Height.Set(recipeList.Height.Pixels - 2f * vpadding, 0F);
-			recipeScrollbar.Left.Set(recipeList.Width.Pixels - recipeScrollbar.Width.Pixels * 2f - vpadding / 2f, 0f);
-			recipeScrollbar.Top.Set(vpadding, 0f);
+			recipeScrollbar.Height.Set(recipeList.Height.Pixels - vpadding * 1.5f, 0F);
+			recipeScrollbar.Left.Set(-vpadding * 3f, 1f);
+			recipeScrollbar.Top.Set(closeButton.Top.Pixels + closeButton.Height.Pixels + vpadding / 2f, 0f);
 			recipeList.SetScrollbar(recipeScrollbar);
-			recipeList.Append(recipeScrollbar);
+			basePanel.Append(recipeScrollbar);
 
 			sourceItemPanel.DoUpdate();
+		}
+
+		private void CloseButton_OnClick(UIMouseEvent evt, UIElement listeningElement)
+		{
+			TheDeconstructor.instance.TryToggleGUI(false);
+		}
+
+		private void BasePanel_OnMouseUp(UIMouseEvent evt, UIElement listeningElement)
+		{
+			if (evt.Target != recipeScrollbar)
+			{
+				_Recalculate(evt.MousePosition);
+				dragging = false;
+			}
+		}
+
+		private void BasePanel_OnMouseDown(UIMouseEvent evt, UIElement listeningElement)
+		{
+			if (evt.Target != recipeScrollbar)
+			{
+				offset = new Vector2(evt.MousePosition.X - _UIView.Left.Pixels, evt.MousePosition.Y - _UIView.Top.Pixels);
+				dragging = true;
+			}
 		}
 
 		public void _Recalculate(Vector2 mousePos, float precent = 0f)
@@ -165,18 +177,48 @@ namespace TheDeconstructor.UI
 
 		protected override void DrawSelf(SpriteBatch spriteBatch)
 		{
-			Vector2 mousePosition = new Vector2((float)Main.mouseX, (float)Main.mouseY);
-
-			if (basePanel.ContainsPoint(mousePosition))
+			base.DrawSelf(spriteBatch);
+			if (visible)
 			{
-				Main.LocalPlayer.mouseInterface = true;
-			}
+				Vector2 mousePosition = new Vector2((float)Main.mouseX, (float)Main.mouseY);
 
-			if (dragging)
-			{
-				_Recalculate(mousePosition);
+				if (_UIView.ContainsPoint(mousePosition))
+				{
+					Main.LocalPlayer.mouseInterface = true;
+				}
+
+				if (dragging)
+				{
+					_Recalculate(mousePosition);
+				}
 			}
 		}
+
+		//protected override void DrawChildren(SpriteBatch spriteBatch)
+		//{
+		//	base.DrawChildren(spriteBatch);
+		//	Rectangle hitbox = GetInnerDimensions().ToRectangle();
+		//	//Main.spriteBatch.Draw(Main.magicPixel, hitbox, Color.Red * 0.6f);
+
+		//	//hitbox = basePanel.GetInnerDimensions().ToRectangle();
+		//	////hitbox.Offset((int)-Main.screenPosition.X, (int)-Main.screenPosition.Y);
+		//	//Main.spriteBatch.Draw(Main.magicPixel, hitbox, Color.LightCyan * 0.6f);
+
+		//	hitbox = baseTitle.GetOuterDimensions().ToRectangle();
+		//	Main.spriteBatch.Draw(Main.magicPixel, hitbox, Color.AliceBlue * 0.6f);
+
+		//	hitbox = cubeItemPanel.GetOuterDimensions().ToRectangle();
+		//	Main.spriteBatch.Draw(Main.magicPixel, hitbox, Color.Yellow * 0.6f);
+
+		//	hitbox = sourceItemPanel.GetOuterDimensions().ToRectangle();
+		//	Main.spriteBatch.Draw(Main.magicPixel, hitbox, Color.Yellow * 0.6f);
+
+		//	hitbox = recipeList.GetOuterDimensions().ToRectangle();
+		//	Main.spriteBatch.Draw(Main.magicPixel, hitbox, Color.Beige * 0.3f);
+
+		//	hitbox = recipeScrollbar.GetOuterDimensions().ToRectangle();
+		//	Main.spriteBatch.Draw(Main.magicPixel, hitbox, Color.Red * 0.6f);
+		//}
 
 		public void TryPutInCube(bool queer = false)
 		{
@@ -274,246 +316,6 @@ namespace TheDeconstructor.UI
 			}
 		}
 
-		internal class UIRecipePanel : UIPanel
-		{
-			internal Recipe embeddedRecipe;
-			internal float stackDiff;
-			internal bool canFail;
-
-			internal ItemValue materialsValue;
-			internal ItemValue resultValue;
-			internal ItemValue deconstructValue;
-
-			public List<UIItemPanel> materials;
-			public UIRecipeBag recipeBag;
-
-			internal UIText errorText;
-			internal float errorTime;
-
-			public UIRecipePanel(float width, float height, float left = 0f, float top = 0f)
-			{
-				materials = new List<UIItemPanel>();
-				for (int i = 0; i < 14; i++)
-				{
-					UIItemPanel matPanel = new UIItemPanel();
-					matPanel.Left.Set((matPanel.Width.Pixels + vpadding / 2f) * (i % 7), 0f);
-					matPanel.Top.Set(i < 7 ? 0f : matPanel.Height.Pixels + vpadding / 2f, 0f);
-					materials.Add(matPanel);
-				}
-				UIItemPanel lastPanel = new UIItemPanel();
-				lastPanel.Left.Set(0f, 0f);
-				lastPanel.Top.Set(2f * lastPanel.Height.Pixels + vpadding, 0f);
-				materials.Add(lastPanel);
-
-				base.Width.Set(width, 0f);
-				base.Height.Set(height, 0f);
-				base.Left.Set(left, 0f);
-				base.Top.Set(top, 0f);
-
-				recipeBag = new UIRecipeBag(TheDeconstructor.instance.GetTexture("DeconstructBagItem")) { Parent = this };
-				recipeBag.Width.Set(30f, 0f);
-				recipeBag.Height.Set(40f, 0f);
-				recipeBag.Top.Set(lastPanel.Top.Pixels + recipeBag.Height.Pixels / 4f, 0f);
-				recipeBag.Left.Set(lastPanel.Width.Pixels + vpadding, 0f);
-				base.Append(recipeBag);
-
-				errorTime = 2;
-				errorText = new UIText(" ");
-				errorText.Width.Set(25f, 0f);
-				errorText.Height.Set(25f, 0f);
-				errorText.Top.Set(recipeBag.Top.Pixels + Main.fontMouseText.MeasureString(errorText.Text).Y / 2f, 0f);
-				errorText.Left.Set(recipeBag.Left.Pixels + recipeBag.Width.Pixels + vpadding, 0f);
-				base.Append(errorText);
-			}
-
-			public override void OnInitialize()
-			{
-				foreach (var panel in materials)
-				{
-					base.Append(panel);
-				}
-			}
-
-			public override void Update(GameTime gameTime)
-			{
-				base.Update(gameTime);
-
-				if (errorTime > 0f)
-				{
-					errorTime -= 1f;
-					if (errorTime <= 0f)
-					{
-						errorText.SetText("");
-					}
-				}
-			}
-		}
-
-
-		/// <summary>
-		/// Clickable, to deconstruct selected recipe
-		/// </summary>
-		internal class UIRecipeBag : UIImageButton
-		{
-			public UIRecipeBag(Texture2D texture) : base(texture)
-			{
-				base.OnClick += (s, e) =>
-				{
-					if (Parent != null)
-					{
-						var recipePanel = (Parent as UIRecipePanel);
-						var guiInst = TheDeconstructor.instance.deconGUI;
-						var items = new List<Item>();
-						guiInst.dragging = false;
-
-						if (guiInst.cubeItemPanel.item.IsAir)
-						{
-							SoundHelper.PlaySound(SoundHelper.SoundType.Decline);
-							recipePanel.errorTime = 550f;
-							recipePanel.errorText.SetText("Place in an unsealed cube first!");
-							return;
-						}
-
-						if ((guiInst.cubeItemPanel.item.modItem as Cube)?.State == Cube.CubeState.Sealed)
-						{
-							SoundHelper.PlaySound(SoundHelper.SoundType.Decline);
-							recipePanel.errorTime = 550f;
-							recipePanel.errorText.SetText("The current cube is already sealed!");
-							return;
-						}
-
-						// Tries to 'buy'
-						if (!Main.LocalPlayer.BuyItemOld(recipePanel.deconstructValue.RawValue))
-						{
-							SoundHelper.PlaySound(SoundHelper.SoundType.Decline);
-							recipePanel.errorTime = 550f;
-							recipePanel.errorText.SetText("You do not have enough gold!");
-							return;
-						}
-
-						SoundHelper.PlaySound(SoundHelper.SoundType.Receive);
-						// Remove stacks from panel item based on recipe cost
-						var stack = guiInst.sourceItemPanel.item.stack;
-						var stackDiff = (float)stack / (float)recipePanel.embeddedRecipe.createItem.stack;
-						stackDiff *= recipePanel.embeddedRecipe.createItem.stack;
-						guiInst.sourceItemPanel.item.stack -= (int)stackDiff;
-
-						// Generate sealed cube
-						Cube cube = guiInst.cubeItemPanel.item.Clone().modItem as Cube;
-						recipePanel.materials.ForEach(x => items.Add(x.item));
-						cube.SealedItems = new List<Item>(items);
-						cube.SealedSource = (Item)guiInst.sourceItemPanel.item.Clone();
-						cube.SealedSource.stack = (int)stackDiff;
-						cube.CanFail = recipePanel.canFail;
-						cube.State = Cube.CubeState.Sealed;
-						cube.item.value = recipePanel.materialsValue.RawValue;
-						guiInst.cubeItemPanel.item = cube.item.Clone();
-
-						// Reset item panel if needed
-						if (guiInst.sourceItemPanel.item.stack <= 0)
-							guiInst.sourceItemPanel.item.TurnToAir();
-
-						guiInst.sourceItemPanel.DoUpdate();
-					}
-				};
-			}
-
-			public override void Update(GameTime gameTime)
-			{
-				if (base.IsMouseHovering)
-				{
-					var parentPanel = (Parent as UIRecipePanel);
-					Main.hoverItemName =
-						$"{hoverString}Click to seal recipe inside cube" +
-						$"\nResult worth: {parentPanel?.resultValue}" +
-						$"\nRecipe worth: {parentPanel?.materialsValue}" +
-						$"\nDeconstruction cost: {parentPanel?.deconstructValue}";
-				}
-			}
-		}
-
-		// Is cube panel (only accepts unsealed cube)
-		internal sealed class UIItemCubePanel : UIInteractableItemPanel
-		{
-			public UIItemCubePanel(int netID = 0, int stack = 0, Texture2D hintTexture = null, string hintText = null) :
-				base(netID, stack, hintTexture, hintText)
-			{
-			}
-
-			//public override void BindItem(DeconEntityInstance instance)
-			//{
-			//	item = instance.cubeItem.Clone();
-			//}
-
-			public override bool CanTakeItem(Item item)
-			{
-				return item.modItem is Cube
-						&& ((Cube)item.modItem).State == Cube.CubeState.Open;
-			}
-		}
-
-		// Is source panel (item to deconstruct)
-		internal sealed class UIItemSourcePanel : UIInteractableItemPanel
-		{
-			public UIItemSourcePanel(int netID = 0, int stack = 0, Texture2D hintTexture = null, string hintText = null) :
-				base(netID, stack, hintTexture, hintText)
-			{
-
-			}
-
-			//public override void BindItem(DeconEntityInstance instance)
-			//{
-			//	item = instance.sourceItem.Clone();
-			//}
-
-			public override bool CanTakeItem(Item item)
-			{
-				return (item.modItem as Cube)?.State != Cube.CubeState.Sealed;
-			}
-
-			public override void PostOnClick(UIMouseEvent evt, UIElement e)
-			{
-				DoUpdate();
-			}
-
-			public override void PostOnRightClick()
-			{
-				DoUpdate();
-			}
-
-			internal void DoUpdate()
-			{
-				TheDeconstructor.instance.deconGUI.recipeList.Clear();
-				currentRecipes = RecipeSearcher.FindRecipes(item);
-				RecipeSearcher.FillWithRecipes(item, currentRecipes,
-					ref TheDeconstructor.instance.deconGUI.recipeList,
-					TheDeconstructor.instance.deconGUI.recipeScrollbar.Width.Pixels);
-			}
-		}
-
-		internal sealed class DogePanel : UIPanel
-		{
-			public DogePanel(UIElement parent, float offset = 0f)
-			{
-				base.Width.Set(parent.Width.Pixels - offset, 0f);
-				base.Height.Set(parent.Height.Pixels - vpadding / 2f, 0f);
-				var suchEmpty = new UIImage(TheDeconstructor.DogeTexture)
-				{
-					HAlign = 0.5f,
-					VAlign = 0.30f
-				};
-				suchEmpty.Width.Set(160f, 0f);
-				suchEmpty.Height.Set(160f, 0f);
-				base.Append(suchEmpty);
-				var text = new UIText("Wow, such empty", 1f, true)
-				{
-					HAlign = 0.5f,
-					VAlign = 0.85f
-				};
-				base.Append(text);
-			}
-		}
-
 		internal static class RecipeSearcher
 		{
 			public static List<Recipe> FindRecipes(Item item)
@@ -521,20 +323,20 @@ namespace TheDeconstructor.UI
 				return Main.recipe.Where(recipe => !recipe.createItem.IsAir && recipe.createItem.type == item.type && recipe.createItem.stack <= item.stack).ToList();
 			}
 
-			public static void FillWithRecipes(Item source, List<Recipe> recipes, ref UIList list, float offset)
+			public static void FillWithRecipes(Item source)
 			{
-				if (!recipes.Any())
+				if (!currentRecipes.Any())
 				{
-					list.Clear();
-					list.Initialize();
-					list.Add(new DogePanel(list, TheDeconstructor.instance.deconGUI.cubeItemPanel.Width.Pixels));
+					TheDeconstructor.instance.deconGUI.recipeList.Clear();
+					TheDeconstructor.instance.deconGUI.recipeList.Initialize();
+					TheDeconstructor.instance.deconGUI.recipeList.Add(new DogePanel(TheDeconstructor.instance.deconGUI.recipeList));
 				}
 				else
 				{
-					foreach (var recipe in recipes)
+					foreach (var recipe in currentRecipes)
 					{
 						// Setup new recipe panel
-						var recipePanel = new UIRecipePanel(list.Width.Pixels - 3f * vpadding - offset, 200f);
+						var recipePanel = new UIRecipePanel(TheDeconstructor.instance.deconGUI.recipeList.Width.Pixels, 200f);
 						recipePanel.Initialize();
 						recipePanel.embeddedRecipe = recipe; // set embedded recipe
 
@@ -590,7 +392,7 @@ namespace TheDeconstructor.UI
 						if (recipePanel.deconstructValue.RawValue <= 0)
 							recipePanel.deconstructValue.SetFromCopperValue(totalStack);
 						recipePanel.deconstructValue.ApplyDiscount(Main.LocalPlayer);
-						list.Add(recipePanel);
+						TheDeconstructor.instance.deconGUI.recipeList.Add(recipePanel);
 					}
 				}
 
