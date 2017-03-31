@@ -1,4 +1,10 @@
-﻿Changelog from 0.1.1 to 0.2
+﻿Changelog from 0.2 to 0.3
+
+	General
+		
+
+
+Changelog from 0.1.1 to 0.2
 
 	General
 		'Deconstructor' renamed to 'Lunar Deconstructor'
