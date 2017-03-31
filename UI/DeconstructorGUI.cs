@@ -59,7 +59,7 @@ namespace TheDeconstructor.UI
 		internal UIItemCubePanel cubeItemPanel;
 		internal UIItemSourcePanel sourceItemPanel;
 		internal UIList recipeList;
-		internal UIScrollbar recipeScrollbar;
+		internal FixedUIScrollbar recipeScrollbar;
 
 		internal static List<Recipe> currentRecipes;
 		internal static List<short> failureTypes; // used for checking costs
@@ -146,7 +146,7 @@ namespace TheDeconstructor.UI
 			recipeList.Initialize();
 			basePanel.Append(recipeList);
 
-			recipeScrollbar = new UIScrollbar();
+			recipeScrollbar = new FixedUIScrollbar(TheDeconstructor.instance.deconUI);
 			recipeScrollbar.Height.Set(recipeList.Height.Pixels - 2f * vpadding, 0F);
 			recipeScrollbar.Left.Set(recipeList.Width.Pixels - recipeScrollbar.Width.Pixels * 2f - vpadding / 2f, 0f);
 			recipeScrollbar.Top.Set(vpadding, 0f);
