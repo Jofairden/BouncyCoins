@@ -29,9 +29,9 @@ namespace TheDeconstructor
 				stringBuilder.Append($"{Copper}c");
 
 			if (stringBuilder.Length <= 0)
-				return " [No value]";
+				return "[No value]";
 
-			return string.Concat(stringBuilder.ToString().Select(c => $"{c}" + (char.IsLetter(c) ? " " : ""))).TrimEnd(' ');
+			return string.Concat(stringBuilder.ToString().Select(c => c.ToString() + (char.IsLetter(c) ? " " : ""))).TrimEnd(' ');
 		}
 
 		public string ToTagString()
@@ -48,9 +48,9 @@ namespace TheDeconstructor
 				stringBuilder.Append($"[i/s1:{ItemID.CopperCoin}]{Copper}");
 
 			if (stringBuilder.Length <= 0)
-				return " [No value]";
+				return "[No value]";
 
-			return $"{stringBuilder}";
+			return stringBuilder.ToString();
 		}
 
 		public ItemValue SetValues(int copper, int silver = 0, int gold = 0, int platinum = 0)
@@ -118,6 +118,12 @@ namespace TheDeconstructor
 			this.Gold = gold;
 			this.Platinum = platinum;
 			return this;
+		}
+
+
+		public static implicit operator int(ItemValue value)
+		{
+			return value.RawValue;
 		}
 
 		public static implicit operator ItemValue(int rawValue)

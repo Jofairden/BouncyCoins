@@ -424,7 +424,7 @@ namespace TheDeconstructor.UI
 				{
 					var parentPanel = (Parent as UIRecipePanel);
 					Main.hoverItemName =
-						$"{hoverString}Click to receive recipe materials in a goodie bag" +
+						$"{hoverString}Click to seal recipe inside cube" +
 						$"\nResult worth: {parentPanel?.resultValue}" +
 						$"\nRecipe worth: {parentPanel?.materialsValue}" +
 						$"\nDeconstruction cost: {parentPanel?.deconstructValue}";
@@ -490,12 +490,6 @@ namespace TheDeconstructor.UI
 					TheDeconstructor.instance.deconGUI.recipeScrollbar.Width.Pixels);
 			}
 		}
-
-		// Allows user to put in / take out item
-
-
-		// Item panel which can display an item
-
 
 		internal sealed class DogePanel : UIPanel
 		{
@@ -586,7 +580,7 @@ namespace TheDeconstructor.UI
 						{
 							recipePanel.canFail = true;
 							recipePanel.deconstructValue.SetFromCopperValue(combinedValue);
-							hoverString = "Sealed content might not survive seal destruction!\n";
+							hoverString = "Sealed content might be lost when unsealing!\n";
 						}
 						else
 						{
