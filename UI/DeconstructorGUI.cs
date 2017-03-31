@@ -194,7 +194,7 @@ namespace TheDeconstructor.UI
 		{
 			if (!sourceItemPanel.item.IsAir && (!visible || force))
 			{
-				Main.LocalPlayer.GiveClonedItem(sourceItemPanel.item, sourceItemPanel.item.stack);
+				Main.LocalPlayer.QuickSpawnClonedItem(sourceItemPanel.item, sourceItemPanel.item.stack);
 				//Main.LocalPlayer.GetItem(Main.myPlayer, sourceItemPanel.item.Clone()); // does not seem to generate item text
 				//Main.LocalPlayer.QuickSpawnItem(sourceItemPanel.item.type, sourceItemPanel.item.stack);
 				sourceItemPanel.item.TurnToAir();
@@ -206,7 +206,7 @@ namespace TheDeconstructor.UI
 			if (!cubeItemPanel.item.IsAir
 				&& (!visible || force))
 			{
-				Main.LocalPlayer.GiveClonedItem(cubeItemPanel.item, cubeItemPanel.item.stack);
+				Main.LocalPlayer.QuickSpawnClonedItem(cubeItemPanel.item, cubeItemPanel.item.stack);
 				//Main.LocalPlayer.GetItem(Main.myPlayer, cubeItemPanel.item.Clone());
 				//Main.LocalPlayer.QuickSpawnItem(sourceItemPanel.item.type, sourceItemPanel.item.stack);
 				cubeItemPanel.item.TurnToAir();

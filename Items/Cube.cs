@@ -156,7 +156,7 @@ namespace TheDeconstructor.Items
 								continue;
 							}
 							giveItem.stack = useStack;
-							Main.LocalPlayer.GiveClonedItem(giveItem, useStack);
+							Main.LocalPlayer.QuickSpawnClonedItem(giveItem, useStack);
 							//player.GetItem(Main.LocalPlayer.whoAmI, giveItem);
 						}
 						if (leftOver > 0)
@@ -167,7 +167,7 @@ namespace TheDeconstructor.Items
 								continue;
 							}
 							giveItem.stack = leftOver;
-							Main.LocalPlayer.GiveClonedItem(giveItem, leftOver);
+							Main.LocalPlayer.QuickSpawnClonedItem(giveItem, leftOver);
 							//player.GetItem(Main.LocalPlayer.whoAmI, giveItem);
 						}
 					}
@@ -271,7 +271,7 @@ namespace TheDeconstructor.Items
 				inst is LunarCube
 					? Color.White
 					: inst is QueerLunarCube
-						? Tools.DiscoColor()
+						? Main.DiscoColor
 						: Color.White;
 		}
 

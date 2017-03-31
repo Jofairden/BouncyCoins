@@ -34,7 +34,7 @@ namespace TheDeconstructor.Items
 				&& x.Name.Equals("ItemName", System.StringComparison.OrdinalIgnoreCase));
 
 			if (ttl != null)
-				ttl.overrideColor = new Color(Main.DiscoR, Main.DiscoG, Main.DiscoB);
+				ttl.overrideColor = Main.DiscoColor;
 		}
 
 		public override void AddRecipes()
