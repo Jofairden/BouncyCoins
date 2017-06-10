@@ -1,1 +1,6 @@
 Satisfying Coins is a pretty cool mod, it will play some satisyfing sounds when picking up coins.
+That's it.
+
+v0.1.0.1: compatible with tml v0.10
+
+Hope you guys still enjoy this mod.

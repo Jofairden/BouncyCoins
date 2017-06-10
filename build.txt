@@ -1,4 +1,4 @@
 author = jofairden
-version = 0.1
+version = 0.1.0.1
 displayName = Satisfying Coins
 languageVersion = 6
