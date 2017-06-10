@@ -14,7 +14,7 @@ namespace BouncyCoins
 	{
 
 		// (c) gorateron/jofairden
-		// version 0.1.2.2
+		// version 0.1.2.3
 
 		public static int[] VanillaCoinSet =
 		{
