@@ -14,8 +14,8 @@ namespace FastStart
 		Small update 6-1-2017
 		Fix FastStart for newer version
 
-		3-20-2017
-		v 0.4
+		6/10/2017
+		v 0.4.0.1
     */
 
 	public class FastStart : Mod
