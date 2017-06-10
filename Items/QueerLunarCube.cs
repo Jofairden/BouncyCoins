@@ -7,21 +7,19 @@ namespace TheDeconstructor.Items
 {
 	internal sealed class QueerLunarCube : Cube
 	{
-		public override bool Autoload(ref string name, ref string texture, IList<EquipType> equips)
+		public override string Texture => $"{mod.Name}/Items/LunarCube";
+
+		public override void SetStaticDefaults()
 		{
-			texture = $"{mod.Name}/Items/LunarCube";
-			return base.Autoload(ref name, ref texture, equips);
+			base.SetStaticDefaults();
+			DisplayName.SetDefault("Queer Lunar Cube");
 		}
 
 		public override void SetDefaults()
 		{
 			base.SetDefaults();
-			item.name = "Queer Lunar Cube";
 			item.rare = 10;
 		}
-
-		public override ModItem Clone()
-			 => CubeClone<QueerLunarCube>();
 
 		public override Color? GetAlpha(Color lightColor) =>
 			CubeColor<QueerLunarCube>();

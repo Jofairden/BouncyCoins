@@ -38,16 +38,13 @@ namespace TheDeconstructor
 			deconUI.SetState(deconGUI);
 		}
 
-		/// <summary>
-		/// Insert our UI layer between vanilla layers
-		/// </summary>
-		/// <param name="layers"></param>
-		public override void ModifyInterfaceLayers(List<MethodSequenceListItem> layers)
+
+		public override void ModifyInterfaceLayers(List<GameInterfaceLayer> layers)
 		{
 			int insertLayer = layers.FindIndex(layer => layer.Name.Equals("Vanilla: Mouse Text"));
 			if (insertLayer != -1)
 			{
-				layers.Insert(insertLayer, new MethodSequenceListItem($"{instance.Name}: UI",
+				layers.Insert(insertLayer, new LegacyGameInterfaceLayer($"{instance.Name}: UI",
 					delegate
 					{
 						if (deconGUI.visible)
@@ -57,11 +54,11 @@ namespace TheDeconstructor
 						}
 						return true;
 					},
-					null));
+					InterfaceScaleType.UI));
 			}
 
 			insertLayer = layers.FindIndex(layer => layer.Name.Equals("Vanilla: Interact Item Icon"));
-			layers[insertLayer].Skip = insertLayer != -1 && deconGUI.visible && deconGUI.IsMouseHovering;
+			layers[insertLayer].Active = !(insertLayer != -1 && deconGUI.visible && deconGUI.IsMouseHovering);
 		}
 
 		/// <summary>

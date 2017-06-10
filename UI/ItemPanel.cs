@@ -58,12 +58,12 @@ namespace TheDeconstructor.UI
 				drawColor = this.item.GetAlpha(Color.White);
 				if (base.IsMouseHovering)
 				{
-					Main.hoverItemName = item.name;
-					Main.toolTip = item.Clone();
-					Main.toolTip.GetModInfo<DeconItemInfo>(TheDeconstructor.instance).addValueTooltip = true;
+					Main.hoverItemName = item.Name;
+					Main.HoverItem = item.Clone();
+					Main.HoverItem.GetGlobalItem<DeconGlobalItem>(TheDeconstructor.instance).addValueTooltip = true;
 					//ItemValue value = new ItemValue().SetFromCopperValue(item.value*item.stack);
-					Main.toolTip.name =
-						$"{Main.toolTip.name}{Main.toolTip.modItem?.mod.Name.Insert((int)Main.toolTip.modItem?.mod.Name.Length, "]").Insert(0, " [")}";
+					Main.HoverItem.SetNameOverride(
+						$"{Main.HoverItem.Name}{Main.HoverItem.modItem?.mod.Name.Insert((int) Main.HoverItem.modItem?.mod.Name.Length, "]").Insert(0, " [")}");
 				}
 			}
 

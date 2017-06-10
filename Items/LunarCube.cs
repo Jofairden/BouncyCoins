@@ -6,14 +6,11 @@ namespace TheDeconstructor.Items
 {
 	internal sealed class LunarCube : Cube
 	{
-		public override void SetDefaults()
+		public override void SetStaticDefaults()
 		{
-			base.SetDefaults();
-			item.name = "Lunar Cube";
+			base.SetStaticDefaults();
+			DisplayName.SetDefault("Lunar Cube");
 		}
-
-		public override ModItem Clone() => 
-			CubeClone<LunarCube>();
 
 		public override Color? GetAlpha(Color lightColor) =>
 			CubeColor<LunarCube>();

@@ -5,7 +5,9 @@ using System.Linq;
 using Microsoft.Xna.Framework;
 using Terraria;
 using Terraria.DataStructures;
+using Terraria.GameContent.NetModules;
 using Terraria.ID;
+using Terraria.Localization;
 using Terraria.ModLoader;
 using Terraria.ModLoader.IO;
 
@@ -53,22 +55,20 @@ namespace TheDeconstructor.Items
 		public override bool CloneNewInstances =>
 			true;
 
+		public override void SetStaticDefaults()
+		{
+			DisplayName.SetDefault("Cube");
+			Main.RegisterItemAnimation(item.type, new DrawAnimationVertical(5, 8));
+			ItemID.Sets.ItemNoGravity[item.type] = true;
+		}
+
 		public override void SetDefaults()
 		{
-			item.name = "Cube";
 			item.rare = 9;
 			item.maxStack = 1;
 			item.value = 1;
 			item.width = 20;
 			item.height = 28;
-			ItemID.Sets.ItemNoGravity[item.type] = true;
-		}
-
-		public override DrawAnimation GetAnimation()
-		{
-			// tiles are drawn every 5 frames, dont go below 5 ticks per frame
-			// so that the tile can draw the cubes at the same interval
-			return new DrawAnimationVertical(5, 8);
 		}
 
 		public virtual TagCompound CubeSave()
@@ -192,8 +192,8 @@ namespace TheDeconstructor.Items
 		{
 			string str = $"[i/s1:{type}] (x{stack}) was lost!";
 			Main.NewText(str, 255);
-			if (Main.netMode == NetmodeID.MultiplayerClient)
-				NetMessage.SendData(MessageID.ChatText, -1, -1, str, 255);
+			//if (Main.netMode == NetmodeID.MultiplayerClient)
+			//	NetMessage.SendData(MessageID.ChatText, -1, -1, NetworkText.Empty, 255);
 		}
 
 		public override void ModifyTooltips(List<TooltipLine> tooltips)
@@ -230,7 +230,7 @@ namespace TheDeconstructor.Items
 				&& !SealedSource.IsAir)
 			{
 				tooltips.Add(new TooltipLine(mod, $"{mod.Name}: LunarCube: Source",
-						$"Sealed item:[i/s1:{SealedSource.type}][c/{SealedSource.GetTooltipColor().ToHexString().Substring(1)}:{SealedSource.name} ](x{SealedSource.stack})"));
+						$"Sealed item:[i/s1:{SealedSource.type}][c/{SealedSource.GetTooltipColor().ToHexString().Substring(1)}:{SealedSource.Name} ](x{SealedSource.stack})"));
 			}
 
 			// Contents
@@ -241,7 +241,7 @@ namespace TheDeconstructor.Items
 				{
 					if (!infoBagItem.IsAir)
 						tooltips.Add(new TooltipLine(mod, $"{mod.Name}: LunarCube: Content: {infoBagItem.type}",
-							$"[i/s1:{infoBagItem.type}][c/{infoBagItem.GetTooltipColor().ToHexString().Substring(1)}:{infoBagItem.name} ](x{infoBagItem.stack})"));
+							$"[i/s1:{infoBagItem.type}][c/{infoBagItem.GetTooltipColor().ToHexString().Substring(1)}:{infoBagItem.Name} ](x{infoBagItem.stack})"));
 				}
 			}
 
@@ -250,17 +250,11 @@ namespace TheDeconstructor.Items
 		/// <summary>
 		/// How our cube item is cloned
 		/// </summary>
-		/// <typeparam name="T"></typeparam>
-		/// <returns></returns>
-		public virtual Cube CubeClone<T>() where T : Cube, new()
+		public override ModItem Clone()
 		{
-			Cube clone = new T
-			{
-				SealedSource = (Item)this.SealedSource.Clone(),
-				SealedItems = new List<Item>(this.SealedItems),
-				CanFail = this.CanFail,
-				State = this.State
-			};
+			Cube clone = (Cube)MemberwiseClone();
+			clone.SealedSource = (Item)SealedSource.Clone();
+			clone.SealedItems = new List<Item>(SealedItems.Select(x => x.Clone()));
 			return clone;
 		}
 

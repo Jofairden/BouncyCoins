@@ -17,7 +17,9 @@ Queer Lunar Cubes are recognizable by their morphing colors.
 The Lunar Deconstructor will show which cube is currently being handled (when one is put into the UI that is)
 Mod comes with fitting sound effects.
 
-Changelog from 0.2 to 0.3
-
-	General
+Changelog from 0.2 to 0.2.0.1
 		
+	General
+		Updated mod for tml v0.10.0.1
+		Fixed cloning issues (thanks jopo)
+

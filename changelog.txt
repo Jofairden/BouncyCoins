@@ -1,8 +1,8 @@
-﻿Changelog from 0.2 to 0.3
-
-	General
+﻿Changelog from 0.2 to 0.2.0.1
 		
-
+	General
+		Updated mod for tml v0.10.0.1
+		Fixed cloning issues (thanks jopo)
 
 Changelog from 0.1.1 to 0.2
 

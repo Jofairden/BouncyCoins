@@ -9,11 +9,17 @@ namespace TheDeconstructor.Items
 {
 	internal sealed class Deconstructor : ModItem
 	{
+		public override void SetStaticDefaults()
+		{
+			base.SetStaticDefaults();
+			DisplayName.SetDefault("Lunar Deconsructor");
+			Tooltip.SetDefault("Can seal an item to return it to it's former state, for a price" +
+							   "\nMaterials will be put into a sealed Lunar Cube");
+		}
+
+
 		public override void SetDefaults()
 		{
-			item.name = "Lunar Deconstructor";
-			item.toolTip = "Can seal an item to return it to it's former state, for a price";
-			item.toolTip2 = "Materials will be put into a sealed Lunar Cube";
 			item.useStyle = 1;
 			item.useTurn = true;
 			item.useAnimation = 15;

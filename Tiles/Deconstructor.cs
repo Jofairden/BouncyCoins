@@ -5,6 +5,7 @@ using Terraria;
 using Terraria.DataStructures;
 using Terraria.Enums;
 using Terraria.ID;
+using Terraria.Localization;
 using Terraria.ModLoader;
 using Terraria.ObjectData;
 using TheDeconstructor.Items;
@@ -63,7 +64,7 @@ namespace TheDeconstructor.Tiles
 				return Place(i, j);
 			// Multiplayer
 			NetMessage.SendTileSquare(Main.myPlayer, i, j, 4, TileChangeType.None);
-			NetMessage.SendData(MessageID.TileEntityPlacement, -1, -1, "", i, j, Type, 0f, 0, 0, 0);
+			NetMessage.SendData(MessageID.TileEntityPlacement, -1, -1, NetworkText.Empty ,i, j, Type, 0f, 0, 0, 0);
 			return -1;
 		}
 	}
@@ -91,7 +92,9 @@ namespace TheDeconstructor.Tiles
 			TileObjectData.newTile.DrawYOffset = 2;
 			TileObjectData.addTile(Type);
 			AddToArray(ref TileID.Sets.RoomNeeds.CountsAsTable);
-			AddMapEntry(new Color(50, 50, 50), "Lunar Deconstructor");
+			ModTranslation name = CreateMapEntryName();
+			name.SetDefault("The Deconstructor");
+			AddMapEntry(new Color(50, 50, 50), name);
 
 			disableSmartCursor = true;
 		}
