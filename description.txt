@@ -2,6 +2,9 @@ Makes coins bounce, because it looks fancy. <3
 The settings are now also configurable, if you use Flash Kirby's Mod Settings Configurator mod.
 This mod REQUIRES tModLoader v0.8.3.5 or higher!
 
+v0.1.3.1:
+	* Updated bounceSpeed to work with units of a thousand, way easier to control now
+
 v0.1.3: 
 	* set modSide to client (so you can use this mod even if servers dont have it)
 	* Also added integration with FK's Mod Settings Configurator mod

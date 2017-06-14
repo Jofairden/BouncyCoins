@@ -82,8 +82,8 @@ namespace BouncyCoins
 			setting.AddDouble(
 				"bounceSpeed",
 				"Bounce speed",
-				-100f,
-				100f,
+				-1000f,
+				1000f,
 				true);
 
 			setting.AddComment("Decides the offset of the bounce.");
@@ -201,8 +201,8 @@ namespace BouncyCoins
 			// Do we want to bounce by cosine or sine?
 			double bounceByAngle =
 				player.byCosine
-					? Math.Cos(angle * player.speed)
-					: Math.Sin(angle * player.speed);
+					? Math.Cos(angle * player.speed / 1000)
+					: Math.Sin(angle * player.speed / 1000);
 			bounceByAngle *= player.amplitude * player.ampMult;
 
 			// Drawing
@@ -299,7 +299,7 @@ namespace BouncyCoins
 			bouncyItems = new List<int>(BouncyCoins.VanillaCoinSet);
 			amplitude = 10d;
 			ampMult = 1d;
-			speed = 0.075d;
+			speed = 75d;
 			bounceOffset = 5d;
 			keyFrameActions = new Dictionary<int, keyFrameActionDelegate>();
 		}
