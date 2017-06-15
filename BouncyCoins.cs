@@ -6,6 +6,7 @@ using Terraria.ID;
 using Terraria.ModLoader;
 using System;
 using System.Collections.Generic;
+using System.Security.Policy;
 using Terraria.ModLoader.IO;
 
 namespace BouncyCoins
@@ -281,6 +282,19 @@ namespace BouncyCoins
 			return keyFrameActions.Remove(type) && b;
 		}
 
+		internal Version modVersion = new Version(0, 1, 3, 2);
+
+		internal string DeconstructModversion(Version v)
+			=> $"{v.Major}.{v.Minor}.{v.Build}.{v.Revision}";
+
+		internal Version ConstrucModversion(string v)
+		{
+			if (v.Length < 4)
+				throw new Exception("Version length was invalid.");
+
+			return new Version(v);
+		}
+
 		internal bool bounceEvenly; // bounce evenly?
 		internal bool bounceModItems; // do not bounce moditems?
 		internal bool byCosine; // bounce by cosine?
@@ -315,20 +329,51 @@ namespace BouncyCoins
 				["amplitude"] = amplitude,
 				["ampMult"] = ampMult,
 				["speed"] = speed,
-				["bounceOffset"] = bounceOffset
+				["bounceOffset"] = bounceOffset,
+				["modVersion"] = DeconstructModversion(modVersion),
 			};
 		}
 
 		public override void Load(TagCompound tag)
 		{
-			bounceEvenly = tag.Get<bool>("bounceEvenly");
-			bounceModItems = tag.Get<bool>("bounceModItems");
-			byCosine = tag.Get<bool>("byCosine");
-			bouncyItems = new List<int>(tag.GetList<int>("bouncyItems"));
-			amplitude = tag.Get<double>("amplitude");
-			ampMult = tag.Get<double>("ampMult");
-			speed = tag.Get<double>("speed");
-			bounceOffset = tag.Get<double>("bounceOffset");
+			// cross compat. from 0.1.3
+			if (tag.Any(x => x.Value is float))
+			{
+				if (tag.ContainsKey("amplitude"))
+					amplitude = (double)tag.GetAsShort("amplitude");
+				if (tag.ContainsKey("speed"))
+					speed = (double)tag.GetAsShort("speed");
+				if (tag.ContainsKey("universalOffset"))
+					bounceOffset = (double)tag.GetAsShort("universalOffset");
+				if (tag.ContainsKey("bounceEvenly"))
+					bounceEvenly = tag.Get<bool>("bounceEvenly");
+				if (tag.ContainsKey("disallowModItems"))
+					bounceModItems = !tag.Get<bool>("disallowModItems");
+			}
+			else
+			{
+				if (tag.ContainsKey("amplitude"))
+					amplitude = tag.GetAsDouble("amplitude");
+				if (tag.ContainsKey("ampMult"))
+					ampMult = tag.GetAsDouble("ampMult");
+				if (tag.ContainsKey("speed"))
+					speed = tag.GetAsDouble("speed");
+				if (tag.ContainsKey("bounceOffset"))
+					bounceOffset = tag.GetAsDouble("bounceOffset");
+
+				if (tag.ContainsKey("bounceEvenly"))
+					bounceEvenly = tag.Get<bool>("bounceEvenly");
+				if (tag.ContainsKey("bounceModItems"))
+					bounceModItems = tag.Get<bool>("bounceModItems");
+				if (tag.ContainsKey("byCosine"))
+					byCosine = tag.Get<bool>("byCosine");
+
+				if (tag.ContainsKey("modVersion"))
+					modVersion = ConstrucModversion(tag.GetString("modVersion"));
+			}
+
+			if (tag.ContainsKey("bouncyItems"))
+				bouncyItems = new List<int>(tag.GetList<int>("bouncyItems"));
 		}
 	}
 }

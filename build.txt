@@ -1,5 +1,5 @@
 author = Jofairden
-version = 0.1.3.1
+version = 0.1.3.2
 displayName = Bouncy Coins
 buildIgnore = *.csproj, *.user, obj\*, bin\*, .vs\*, *.sln, *.psd, \*.psd, *\*.psd, resources\*, modrelease\*, *.git, *.gitignore, *.git*, .travis.yml
 includePDB = true
